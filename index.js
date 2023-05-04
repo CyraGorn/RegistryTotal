@@ -4,10 +4,17 @@ const path = require('path');
 var router = express.Router();
 var bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
-var AccountModel = require('./testDB.js');
+var StaffModel = require('./models/Staff.js');
 const AuthMiddleware = require('./middleware/AuthMiddleware.js');
 const jwt = require('./helpers/JWTHelper.js');
-const { createSecretKey } = require('crypto');
+const mongoose = require("mongoose");
+const bcrypt = require('bcrypt');
+const SALT_WORK_FACTOR = 10;
+
+mongoose.connect('mongodb://localhost/registrytotal', {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+});
 
 const PORT = 3000;
 
@@ -29,22 +36,53 @@ app.get('/', AuthMiddleware, async (req, res, next) => {
     })
 });
 
-// app.get('/', (req, res) => {
-//     res.sendFile(__dirname + '/views/login.html');
-// })
-
 app.post('/login', async (req, res) => {
     var email = req.body.email;
     var password = req.body.password;
-    var token = await jwt.sign({ user: email });
-    var kq = await jwt.verify(token);
-    res.cookie('session', token, { httpOnly: true, sameSite: true, secure: true });
-    // return res.json({
-    //     token: token,
-    //     message: "thanh cong",
-    //     ketqua: kq
+    try {
+        const user = await StaffModel.findOne({ email: email });
+        if (!user) {
+            return res.status(422).json({ error: 'Invalid email or password' });
+        }
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(422).json({ error: 'Invalid email or password' });
+        }
+        var token = await jwt.sign({
+            user: email,
+            isAdmin: user.isAdmin
+        });
+        var kq = await jwt.verify(token);
+        res.cookie('session', token, { httpOnly: true, sameSite: true, secure: true });
+        res.redirect('/');
+    } catch (err) {
+        next(err);
+    }
+    // console.log(email, password);
+    // StaffModel.findOne({
+    //     email: email
+    // }).then(async (data) => {
+    //     if (!data) {
+    //         res.redirect('/');
+    //     }
+    //     bcrypt.compare(candidatePassword, this.password, function (err, isMatch) {
+    //         if (err) return cb(err);
+    //         cb(null, isMatch);
+    //     });
+    //     console.log(data);
+    //     if (data) {
+    //         console.log("vaicalon");
+    //         var token = await jwt.sign({ user: email });
+    //         var kq = await jwt.verify(token);
+    //         res.cookie('session', token, { httpOnly: true, sameSite: true, secure: true });
+    //         res.redirect('/');
+    //     } else {
+    //         res.send("Khong co tai khoan");
+    //     }
+    // }).catch((err) => {
+    //     res.status(500).send();
     // })
-    res.redirect('/');
 });
 
 app.get('/login', (req, res) => {
@@ -53,19 +91,19 @@ app.get('/login', (req, res) => {
 })
 
 app.post('/register', (req, res) => {
-    // AccountModel.findOne({
-    //     email: email,
-    //     password: password
-    // }).then((data) => {
-    //     console.log(data);
-    //     if (data) {
-    //         res.send("Tim thay tai khoan");
-    //     } else {
-    //         res.send("Khong co tai khoan");
-    //     }
-    // }).catch((err) => {
-    //     res.status(500).send();
-    // })
+    AccountModel.findOne({
+        email: email,
+        password: password
+    }).then((data) => {
+        console.log(data);
+        if (data) {
+            res.send("Tim thay tai khoan");
+        } else {
+            res.send("Khong co tai khoan");
+        }
+    }).catch((err) => {
+        res.status(500).send();
+    })
 })
 
 app.get('/logout', (req, res) => {
