@@ -1,29 +1,19 @@
 const mongoose = require("mongoose");
 
 const Schema = mongoose.Schema;
-
 mongoose.connect('mongodb://localhost/mydb', {
     useNewUrlParser: true,
     useUnifiedTopology: true
 });
 
-const car = new Schema({
-    name: String
+
+const AccountSchema = new Schema({
+    email: String,
+    password: String
 }, {
-    collection: "Cars"
+    collection: "account"
 });
 
-const CarModel = mongoose.model("Cars", car);
+const AccountModel = mongoose.model("account", AccountSchema);
 
-// CarModel.create({
-//     name: "testvcl2vcl"
-// });
-
-CarModel.find({
-
-})
-    .then(function (data) {
-        console.log(data);
-    }).catch(function (err) {
-        console.log(err);
-    }) 
+module.exports = AccountModel;

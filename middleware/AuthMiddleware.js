@@ -1,22 +1,20 @@
-const JWTHelper = require('../helpers/JWTHelper');
+const JWTHelper = require('../helpers/JWTHelper.js');
 
 module.exports = async (req, res, next) => {
-	try{
+	try {
 		if (req.cookies.session === undefined) {
-            if (req.baseUrl === '/graphql') return next();
-			if (!req.is('application/json')) return res.redirect('/');
-			return res.status(401).json({ status: 'unauthorized', message: 'Authentication required!' });
+			return res.redirect("/login");
 		}
 		return JWTHelper.verify(req.cookies.session)
 			.then(user => {
 				req.user = user;
+				console.log(user);
 				next();
 			})
 			.catch((e) => {
-                if (req.baseUrl === '/graphql') return next();
 				res.redirect('/logout');
 			});
-	} catch(e) {
+	} catch (e) {
 		console.log(e);
 		return res.redirect('/logout');
 	}

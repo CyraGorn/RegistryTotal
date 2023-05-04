@@ -1,12 +1,12 @@
 const mongoose = require("mongoose");
 
 const car = require("./Cars");
-const CenterStaff = require("./CentreStaff");
+const Staff = require("./Staff");
 
-const RegistrySchema = new mongoose.Schema({
-	regisplace: {
+const registrySchema = new mongoose.Schema({
+	regisPlace: {
 		type: mongoose.Schema.Types.ObjectId,
-		ref: "CenterStaff",
+		ref: "Staff",
 	},
 	car: {
 		type: mongoose.Schema.Types.ObjectId,
@@ -14,7 +14,7 @@ const RegistrySchema = new mongoose.Schema({
 	},
 	regisDate: {
 		type: Date,
-		default: date.now,
+		default: Date.now,
 		required: true,
 	},
 	expiredDate: {
@@ -25,4 +25,4 @@ const RegistrySchema = new mongoose.Schema({
 	collection: "Registry"
 });
 
-module.exports = mongoose.model("Registry", RegistrySchema);
+module.exports = mongoose.model("Registry", registrySchema);

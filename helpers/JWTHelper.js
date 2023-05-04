@@ -5,7 +5,8 @@ const SECRET = crypto.randomBytes(69).toString('hex');
 module.exports = {
     async sign(data) {
         return jwt.sign(data, SECRET, {
-            algorithm: 'HS256'
+            algorithm: 'HS256',
+            expiresIn: 3600 * 5
         });
     },
     async verify(token) {
