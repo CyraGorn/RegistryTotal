@@ -19,15 +19,19 @@ app.use(bodyParser.json());
 var router = require(__dirname + '/router.js');
 app.use('/admin', router);
 
-app.get('/', AuthMiddleware, async (req, res, next) => {
-    var token = req.cookies.session
-    var kq = await jwt.verify(token);
-    return res.json({
-        token: token,
-        message: "thanh cong",
-        ketqua: kq
-    })
-});
+// app.get('/', AuthMiddleware, async (req, res, next) => {
+//     var token = req.cookies.session
+//     var kq = await jwt.verify(token);
+//     return res.json({
+//         token: token,
+//         message: "thanh cong",
+//         ketqua: kq
+//     })
+// });
+
+app.get('/', (req, res) => {
+    res.sendFile(__dirname + '/views/login.html');
+})
 
 app.post('/login', async (req, res) => {
     var email = req.body.email;
