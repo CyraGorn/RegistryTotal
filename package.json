@@ -75,7 +75,7 @@
 		"start": "nodemon index.js"
 	},
 	"engines": {
-		"node": "18.x"
+		"node": "16.x"
 	},
 	"author": "",
 	"license": "ISC"
