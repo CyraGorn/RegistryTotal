@@ -15,7 +15,7 @@ mongoose.connect('mongodb://localhost/registrytotal', {
     useUnifiedTopology: true
 });
 
-const PORT = 3000;
+// const PORT = 3000;
 var app = express();
 
 app.use('/static', express.static(path.resolve('static')));
@@ -74,6 +74,6 @@ app.use(function (req, res, next) {
     res.status(404).send("Not Found");
 });
 
-app.listen(PORT, () => {
-    console.log(`Listening on http://localhost:${PORT}`);
+app.listen(process.env.PORT, () => {
+    console.log(`Listening on http://localhost:${process.env.PORT}`);
 });
