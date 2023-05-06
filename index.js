@@ -1,5 +1,4 @@
 const express = require('express');
-var app = express();
 const path = require('path');
 var router = express.Router();
 var bodyParser = require('body-parser');
@@ -17,6 +16,7 @@ mongoose.connect('mongodb://localhost/registrytotal', {
 });
 
 const PORT = 3000;
+var app = express();
 
 app.use('/static', express.static(path.resolve('static')));
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -24,14 +24,13 @@ app.use(cookieParser());
 app.use(bodyParser.json());
 
 var router = require(__dirname + '/router.js');
-app.use('/admin', router);
+app.use('/api', router);
 
 app.get('/', AuthMiddleware, async (req, res, next) => {
     var token = req.cookies.session
     var kq = await jwt.verify(token);
     return res.json({
         token: token,
-        message: "thanh cong",
         ketqua: kq
     })
 });
@@ -59,30 +58,6 @@ app.post('/login', async (req, res) => {
     } catch (err) {
         next(err);
     }
-    // console.log(email, password);
-    // StaffModel.findOne({
-    //     email: email
-    // }).then(async (data) => {
-    //     if (!data) {
-    //         res.redirect('/');
-    //     }
-    //     bcrypt.compare(candidatePassword, this.password, function (err, isMatch) {
-    //         if (err) return cb(err);
-    //         cb(null, isMatch);
-    //     });
-    //     console.log(data);
-    //     if (data) {
-    //         console.log("vaicalon");
-    //         var token = await jwt.sign({ user: email });
-    //         var kq = await jwt.verify(token);
-    //         res.cookie('session', token, { httpOnly: true, sameSite: true, secure: true });
-    //         res.redirect('/');
-    //     } else {
-    //         res.send("Khong co tai khoan");
-    //     }
-    // }).catch((err) => {
-    //     res.status(500).send();
-    // })
 });
 
 app.get('/login', (req, res) => {
@@ -90,25 +65,13 @@ app.get('/login', (req, res) => {
     res.sendFile(__dirname + '/views/login.html');
 })
 
-app.post('/register', (req, res) => {
-    AccountModel.findOne({
-        email: email,
-        password: password
-    }).then((data) => {
-        console.log(data);
-        if (data) {
-            res.send("Tim thay tai khoan");
-        } else {
-            res.send("Khong co tai khoan");
-        }
-    }).catch((err) => {
-        res.status(500).send();
-    })
-})
-
 app.get('/logout', (req, res) => {
     res.clearCookie('session');
     return res.redirect('/login');
+});
+
+app.use(function (req, res, next) {
+    res.status(404).send("Not Found");
 });
 
 app.listen(PORT, () => {
