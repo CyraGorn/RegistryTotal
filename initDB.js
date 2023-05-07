@@ -12,13 +12,9 @@ mongoose.connect('mongodb+srv://baongo:BB8XZsud1EOx4Cjj@registrytotal.v8gw10b.mo
     useUnifiedTopology: true
 });
 
-// const db = mongoose.connection;
-// db.dropDatabase();
-
 const CarOwners = require('./models/CarOwners');
 const Cars = require('./models/Cars');
 const Staff = require('./models/Staff');
-const Person = require('./models/Person');
 const Registry = require('./models/Registry');
 const RegistryOffice = require('./models/RegistryOffice');
 
@@ -385,60 +381,60 @@ async function createAll(adminNum, staffNum, registryDepartmentNum, registryOffi
 async function main() {
     // const db = mongoose.connection;
     // db.dropDatabase();
-    await createCollection();
-    await CarOwners.deleteMany({});
-    await Cars.deleteMany({});
-    await Person.deleteMany({});
-    await Registry.deleteMany({});
-    await RegistryOffice.deleteMany({});
-    await Staff.deleteMany({});
 
-    var adminNum = 50;
-    var staffNum = 1050;
-    var registryDepartmentNum = 1;
-    var registryOfficeNum = 150;
-    var carOwnerNum = 3000;
-    var carNum = carOwnerNum;
-    var registryNum = carNum;
+    // await createCollection();
+    // await CarOwners.deleteMany({});
+    // await Cars.deleteMany({});
+    // await Registry.deleteMany({});
+    // await RegistryOffice.deleteMany({});
+    // await Staff.deleteMany({});
 
-    createAll(adminNum, staffNum, registryDepartmentNum, registryOfficeNum, carOwnerNum, carNum, registryNum);
-    connect_CarCarOwners(carNum);
-    connect_RegistryCarStaff(carNum);
-    connect_RegistryofficeStaff(adminNum, 1);
-    connect_RegistryofficeStaff(7, 0);
+    // var adminNum = 50;
+    // var staffNum = 1050;
+    // var registryDepartmentNum = 1;
+    // var registryOfficeNum = 150;
+    // var carOwnerNum = 3000;
+    // var carNum = carOwnerNum;
+    // var registryNum = carNum;
+
+    // await createAll(adminNum, staffNum, registryDepartmentNum, registryOfficeNum, carOwnerNum, carNum, registryNum);
+    // connect_CarCarOwners(carNum);
+    // connect_RegistryCarStaff(carNum);
+    // connect_RegistryofficeStaff(adminNum, 1);
+    // connect_RegistryofficeStaff(7, 0);
 
 
 
-    // const SALT_WORK_FACTOR = 10;
-    // const bcrypt = require('bcrypt');
-    // async function hashPassword(password) {
-    //     const salt = await new Promise((resolve, reject) => {
-    //         bcrypt.genSalt(SALT_WORK_FACTOR, function (err, salt) {
-    //             if (err) reject(err)
-    //             resolve(salt)
-    //         });
-    //     });
-    //     const hashedPassword = await new Promise((resolve, reject) => {
-    //         bcrypt.hash(password, salt, function (err, hash) {
-    //             if (err) reject(err)
-    //             resolve(hash)
-    //         });
-    //     });
-    //     return hashedPassword;
-    // }
-    // var staff = await Staff.find({});
-    // for (var i = 0; i < staff.length; i++) {
-    //     var s = await hashPassword('12345678');
-    //     Staff.updateOne({
-    //         _id: staff[i]._id
-    //     }, {
-    //         password: String(s)
-    //     }).then(() => {
-    //         console.log(`Successfully updated ${i}`);
-    //     }).catch((err) => {
-    //         console.log(err);
-    //         return;
-    //     });
-    // }
+    const SALT_WORK_FACTOR = 10;
+    const bcrypt = require('bcrypt');
+    async function hashPassword(password) {
+        const salt = await new Promise((resolve, reject) => {
+            bcrypt.genSalt(SALT_WORK_FACTOR, function (err, salt) {
+                if (err) reject(err)
+                resolve(salt)
+            });
+        });
+        const hashedPassword = await new Promise((resolve, reject) => {
+            bcrypt.hash(password, salt, function (err, hash) {
+                if (err) reject(err)
+                resolve(hash)
+            });
+        });
+        return hashedPassword;
+    }
+    var staff = await Staff.find({});
+    for (var i = 0; i < staff.length; i++) {
+        var s = await hashPassword('12345678');
+        Staff.updateOne({
+            _id: staff[i]._id
+        }, {
+            password: String(s)
+        }).then(() => {
+            console.log(`Successfully updated ${i}`);
+        }).catch((err) => {
+            console.log(err);
+            return;
+        });
+    }
 }
-main();
+main()

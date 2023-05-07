@@ -8,22 +8,7 @@ const AuthMiddleware = require('./middleware/AuthMiddleware.js');
 const jwt = require('./helpers/JWTHelper.js');
 const mongoose = require("mongoose");
 const bcrypt = require('bcrypt');
-const SALT_WORK_FACTOR = 10;
 
-
-const MongoClient = require('mongodb').MongoClient;
-
-// Connection URI
-// const uri = "mongodb+srv://baongo:BB8XZsud1EOx4Cjj@registrytotal.v8gw10b.mongodb.net/?retryWrites=true&w=majority";
-// const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
-
-// client.connect(err => {
-//     if (err) {
-//         console.log(`Error while connecting: ${err}`);
-//         return;
-//     }
-//     console.log("Connected successfully to server");
-// });
 
 mongoose.connect('mongodb+srv://baongo:BB8XZsud1EOx4Cjj@registrytotal.v8gw10b.mongodb.net/?retryWrites=true&w=majority', {
     useNewUrlParser: true,
@@ -83,6 +68,43 @@ app.get('/login', (req, res) => {
 app.get('/logout', (req, res) => {
     res.clearCookie('session');
     return res.redirect('/login');
+});
+
+app.get('/forgot-password', function (req, res) {
+    res.redirect('http://google.com');
+});
+
+app.post('/forgot-password', function (req, res) {
+    var email = req.body.email;
+    var token = generateToken();
+    var expirationTime = moment().add(1, 'hour').toDate();
+    saveTokenInDatabase(email, token, expirationTime);
+    sendResetEmail(email, token);
+    res.render('forgot-password-confirm');
+});
+
+app.get('/reset-password/:token', function (req, res) {
+    var token = req.params.token;
+    var isValidToken = checkIfTokenIsValid(token);
+    if (isValidToken) {
+        res.render('reset-password-form', { token: token });
+    } else {
+        res.render('invalid-token');
+    }
+});
+
+app.post('/reset-password/:token', function (req, res) {
+    var token = req.params.token;
+    var isValidToken = checkIfTokenIsValid(token);
+    if (isValidToken) {
+        var newPassword = req.body.newPassword;
+        var email = getEmailFromToken(token);
+        resetPasswordInDatabase(email, newPassword);
+        deleteTokenFromDatabase(email, token);
+        res.render('reset-password-confirm');
+    } else {
+        res.render('invalid-token');
+    }
 });
 
 app.use(function (req, res, next) {
