@@ -28,11 +28,15 @@ app.use('/api', router);
 
 app.get('/', AuthMiddleware, async (req, res, next) => {
     var token = req.cookies.session
-    var kq = await jwt.verify(token);
-    return res.json({
-        token: token,
-        ketqua: kq
-    })
+    var kq = jwt.verify(token).then((kq) => {
+        StaffModel.findOne({
+            email: kq['user']
+        }).populate('workFor').then((data) => {
+            return res.json(data);
+        }).catch((err) => {
+            return res.status(500).json("SERVER ERROR")
+        })
+    });
 });
 
 app.post('/login', async (req, res) => {
@@ -48,13 +52,13 @@ app.post('/login', async (req, res) => {
         if (!isMatch) {
             return res.status(422).json({ error: 'Invalid email or password' });
         }
-        var token = await jwt.sign({
+        var token = jwt.sign({
             user: email,
             isAdmin: user.isAdmin
-        });
-        var kq = await jwt.verify(token);
-        res.cookie('session', token, { httpOnly: true, sameSite: true, secure: true });
-        res.redirect('/');
+        }).then((token) => {
+            res.cookie('session', token, { httpOnly: true, sameSite: true, secure: true });
+            res.redirect('/');
+        })
     } catch (err) {
         next(err);
     }
