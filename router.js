@@ -6,7 +6,7 @@ const OwnerModel = require('./models/CarOwners.js');
 
 var router = express.Router();
 
-router.get('/staff', RestrictAPI, (req, res) => {
+router.get('/staff', (req, res) => {
     StaffModel.find({
 
     }).populate('workFor').then((data) => {
