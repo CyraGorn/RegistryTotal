@@ -10,7 +10,7 @@ const mongoose = require("mongoose");
 const bcrypt = require('bcrypt');
 
 
-mongoose.connect('mongodb+srv://baongo:BB8XZsud1EOx4Cjj@registrytotal.v8gw10b.mongodb.net/?retryWrites=true&w=majority', {
+mongoose.connect('mongodb+srv://baongo:BB8XZsud1EOx4Cjj@registrytotal.v8gw10b.mongodb.net/registrytotal?retryWrites=true&w=majority', {
     useNewUrlParser: true,
     useUnifiedTopology: true
 });
@@ -60,7 +60,8 @@ app.post('/login', async (req, res) => {
             res.redirect('/');
         })
     } catch (err) {
-        next(err);
+        console.log(err);
+        return res.status(500).json("SERVER ERROR")
     }
 });
 

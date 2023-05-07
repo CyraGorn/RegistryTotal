@@ -7,7 +7,7 @@ var rand = require('random-seed').create();
 //     useUnifiedTopology: true
 // });
 
-mongoose.connect('mongodb+srv://baongo:BB8XZsud1EOx4Cjj@registrytotal.v8gw10b.mongodb.net/?retryWrites=true&w=majority', {
+mongoose.connect('mongodb+srv://baongo:BB8XZsud1EOx4Cjj@registrytotal.v8gw10b.mongodb.net/registrytotal?retryWrites=true&w=majority', {
     useNewUrlParser: true,
     useUnifiedTopology: true
 });
@@ -72,9 +72,9 @@ function createDate(start, end) {
 }
 
 function createPerson() {
-    var ho = ["Nguyen", "Ngo", "Le", "Tran", "Bui", "Ly", "Trieu"];
-    var dem = ["Van", "Thi"];
-    var ten = ["Linh", "Nam", "Minh", "Cuong", "Hai", "Ha", "Son", "Hoa", "Trung", "Huong"];
+    var ho = ["Nguyen", "Ngo", "Le", "Tran", "Bui", "Ly", "Trieu", "Ma", "Luong"];
+    var dem = ["Van", "Thi", "Duc", "Huu", "Thu", "Ngoc"];
+    var ten = ["Linh", "Nam", "Vuong", "Minh", "Cuong", "Hai", "Ha", "Son", "Hoa", "Trung", "Huong", "Chi", "Tri", "Thao"];
     var namel1 = ho.length;
     var namel2 = dem.length;
     var namel3 = ten.length;
@@ -389,52 +389,52 @@ async function main() {
     // await RegistryOffice.deleteMany({});
     // await Staff.deleteMany({});
 
-    // var adminNum = 50;
-    // var staffNum = 1050;
-    // var registryDepartmentNum = 1;
-    // var registryOfficeNum = 150;
-    // var carOwnerNum = 3000;
-    // var carNum = carOwnerNum;
-    // var registryNum = carNum;
+    var adminNum = 50;
+    var staffNum = 1050;
+    var registryDepartmentNum = 1;
+    var registryOfficeNum = 150;
+    var carOwnerNum = 3000;
+    var carNum = carOwnerNum;
+    var registryNum = carNum;
 
     // await createAll(adminNum, staffNum, registryDepartmentNum, registryOfficeNum, carOwnerNum, carNum, registryNum);
-    // connect_CarCarOwners(carNum);
-    // connect_RegistryCarStaff(carNum);
-    // connect_RegistryofficeStaff(adminNum, 1);
-    // connect_RegistryofficeStaff(7, 0);
+    connect_CarCarOwners(carNum);
+    connect_RegistryCarStaff(carNum);
+    connect_RegistryofficeStaff(adminNum, 1);
+    connect_RegistryofficeStaff(7, 0);
 
 
 
-    const SALT_WORK_FACTOR = 10;
-    const bcrypt = require('bcrypt');
-    async function hashPassword(password) {
-        const salt = await new Promise((resolve, reject) => {
-            bcrypt.genSalt(SALT_WORK_FACTOR, function (err, salt) {
-                if (err) reject(err)
-                resolve(salt)
-            });
-        });
-        const hashedPassword = await new Promise((resolve, reject) => {
-            bcrypt.hash(password, salt, function (err, hash) {
-                if (err) reject(err)
-                resolve(hash)
-            });
-        });
-        return hashedPassword;
-    }
-    var staff = await Staff.find({});
-    for (var i = 0; i < staff.length; i++) {
-        var s = await hashPassword('12345678');
-        Staff.updateOne({
-            _id: staff[i]._id
-        }, {
-            password: String(s)
-        }).then(() => {
-            console.log(`Successfully updated ${i}`);
-        }).catch((err) => {
-            console.log(err);
-            return;
-        });
-    }
+    // const SALT_WORK_FACTOR = 10;
+    // const bcrypt = require('bcrypt');
+    // async function hashPassword(password) {
+    //     const salt = await new Promise((resolve, reject) => {
+    //         bcrypt.genSalt(SALT_WORK_FACTOR, function (err, salt) {
+    //             if (err) reject(err)
+    //             resolve(salt)
+    //         });
+    //     });
+    //     const hashedPassword = await new Promise((resolve, reject) => {
+    //         bcrypt.hash(password, salt, function (err, hash) {
+    //             if (err) reject(err)
+    //             resolve(hash)
+    //         });
+    //     });
+    //     return hashedPassword;
+    // }
+    // var staff = await Staff.find({});
+    // for (var i = 0; i < staff.length; i++) {
+    //     var s = await hashPassword('12345678');
+    //     Staff.updateOne({
+    //         _id: staff[i]._id
+    //     }, {
+    //         password: String(s)
+    //     }).then(() => {
+    //         console.log(`Successfully updated ${i}`);
+    //     }).catch((err) => {
+    //         console.log(err);
+    //         return;
+    //     });
+    // }
 }
 main()
