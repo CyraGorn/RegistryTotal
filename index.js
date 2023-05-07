@@ -111,6 +111,6 @@ app.use(function (req, res, next) {
     res.status(404).send("Not Found");
 });
 
-app.listen(PORT, () => {
-    console.log(`Listening on http://localhost:${PORT}`);
+app.listen(process.env.PORT, () => {
+    console.log(`Listening on http://localhost:${process.env.PORT}`);
 });
