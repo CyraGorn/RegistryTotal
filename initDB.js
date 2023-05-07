@@ -2,7 +2,12 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 var rand = require('random-seed').create();
 
-mongoose.connect('mongodb://localhost/registrytotal', {
+// mongoose.connect('mongodb://localhost/registrytotal', {
+//     useNewUrlParser: true,
+//     useUnifiedTopology: true
+// });
+
+mongoose.connect('mongodb+srv://baongo:BB8XZsud1EOx4Cjj@registrytotal.v8gw10b.mongodb.net/?retryWrites=true&w=majority', {
     useNewUrlParser: true,
     useUnifiedTopology: true
 });
@@ -18,10 +23,6 @@ const Registry = require('./models/Registry');
 const RegistryOffice = require('./models/RegistryOffice');
 
 async function createCollection() {
-    Person.createCollection().then(function (collection) {
-        console.log('Person is created!');
-    });
-
     CarOwners.createCollection().then(function (collection) {
         console.log('CarOwners is created!');
     });
@@ -384,27 +385,27 @@ async function createAll(adminNum, staffNum, registryDepartmentNum, registryOffi
 async function main() {
     // const db = mongoose.connection;
     // db.dropDatabase();
-    // await createCollection();
-    // await CarOwners.deleteMany({});
-    // await Cars.deleteMany({});
-    // await Person.deleteMany({});
-    // await Registry.deleteMany({});
-    // await RegistryOffice.deleteMany({});
-    // await Staff.deleteMany({});
+    await createCollection();
+    await CarOwners.deleteMany({});
+    await Cars.deleteMany({});
+    await Person.deleteMany({});
+    await Registry.deleteMany({});
+    await RegistryOffice.deleteMany({});
+    await Staff.deleteMany({});
 
-    // var adminNum = 50;
-    // var staffNum = 1050;
-    // var registryDepartmentNum = 1;
-    // var registryOfficeNum = 150;
-    // var carOwnerNum = 3000;
-    // var carNum = carOwnerNum;
-    // var registryNum = carNum;
+    var adminNum = 50;
+    var staffNum = 1050;
+    var registryDepartmentNum = 1;
+    var registryOfficeNum = 150;
+    var carOwnerNum = 3000;
+    var carNum = carOwnerNum;
+    var registryNum = carNum;
 
-    // createAll(adminNum, staffNum, registryDepartmentNum, registryOfficeNum, carOwnerNum, carNum, registryNum);
-    // connect_CarCarOwners(carNum);
-    // connect_RegistryCarStaff(carNum);
-    // connect_RegistryofficeStaff(adminNum, 1);
-    // connect_RegistryofficeStaff(7, 0);
+    createAll(adminNum, staffNum, registryDepartmentNum, registryOfficeNum, carOwnerNum, carNum, registryNum);
+    connect_CarCarOwners(carNum);
+    connect_RegistryCarStaff(carNum);
+    connect_RegistryofficeStaff(adminNum, 1);
+    connect_RegistryofficeStaff(7, 0);
 
 
 

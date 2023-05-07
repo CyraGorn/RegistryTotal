@@ -10,7 +10,22 @@ const mongoose = require("mongoose");
 const bcrypt = require('bcrypt');
 const SALT_WORK_FACTOR = 10;
 
-mongoose.connect('mongodb://localhost/registrytotal', {
+
+const MongoClient = require('mongodb').MongoClient;
+
+// Connection URI
+// const uri = "mongodb+srv://baongo:BB8XZsud1EOx4Cjj@registrytotal.v8gw10b.mongodb.net/?retryWrites=true&w=majority";
+// const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+
+// client.connect(err => {
+//     if (err) {
+//         console.log(`Error while connecting: ${err}`);
+//         return;
+//     }
+//     console.log("Connected successfully to server");
+// });
+
+mongoose.connect('mongodb+srv://baongo:BB8XZsud1EOx4Cjj@registrytotal.v8gw10b.mongodb.net/?retryWrites=true&w=majority', {
     useNewUrlParser: true,
     useUnifiedTopology: true
 });

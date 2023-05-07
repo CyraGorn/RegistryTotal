@@ -12,7 +12,7 @@ router.get('/staff', (req, res) => {
     }).populate('workFor').then((data) => {
         res.json(data);
     }).catch((err) => {
-        res.status(500).json("Unexpected Error");
+        res.status(500).json("Unexpected Error: " + err);
     })
 });
 
