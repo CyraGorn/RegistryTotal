@@ -12,7 +12,7 @@ const PAGE_SIZE = 100;
 
 router.get('/staff', (req, res) => {
     StaffModel.findOne({
-        email: kq['user']
+
     }).select("data isAdmin email workFor").populate('workFor').then((data) => {
         res.status(200).json(data);
     }).catch((err) => {
