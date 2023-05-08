@@ -38,7 +38,11 @@ app.post('/login', async (req, res) => {
             var token = jwt.sign({
                 user: email
             }).then(async (token) => {
-                res.cookie('session', token, { httpOnly: true, sameSite: true, secure: true });
+                res.cookie('session', token, {
+                    httpOnly: true,
+                    sameSite: true,
+                    secure: true,
+                });
                 data = {
                     session: token,
                     user: user

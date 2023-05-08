@@ -10,31 +10,23 @@ var router = express.Router();
 
 const PAGE_SIZE = 100;
 
-router.get('/staff', AuthMiddleware, (req, res) => {
-    var token = req.cookies.session;
-    if (token === undefined) {
-        res.status(404).json("NOT FOUND");
-    } else {
+router.get('/staff', (req, res) => {
+    let token;
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+        token = req.headers.authorization.split(' ')[1];
         var kq = jwt.verify(token).then((kq) => {
             StaffModel.findOne({
                 email: kq['user']
             }).select("data isAdmin email workFor").populate('workFor').then((data) => {
                 res.status(200).json(data);
             }).catch((err) => {
-                res.status(500).json("SERVER ERROR");
+                console.log(err);
+                res.status(404).json("NOT FOUND");
             })
         });
+    } else {
+        res.status(404).json("NOT FOUND");
     }
-    // var token = req.cookies.session;
-    // var kq = jwt.verify(token).then((kq) => {
-    //     StaffModel.findOne({
-    //         email: kq['user']
-    //     }).select("data isAdmin email workFor").populate('workFor').then((data) => {
-    //         res.status(200).json(data);
-    //     }).catch((err) => {
-    //         res.status(500).json("SERVER ERROR");
-    //     })
-    // });
 });
 
 const ObjectId = require('mongoose').Types.ObjectId;
@@ -44,7 +36,7 @@ router.get('/office', (req, res) => { //office/:id
         res.status(200).json(off);
     }).catch((err) => {
         console.log(err);
-        res.status(500).json("SERVER ERROR");
+        res.status(404).json("NOT FOUND");
     })
 });
 
@@ -60,7 +52,7 @@ router.get('/office/car', (req, res) => { //office/:id/car
         res.status(200).json(data);
     }).catch((err) => {
         console.log(err);
-        res.status(500).json("SERVER ERROR");
+        res.status(404).json("NOT FOUND");
     })
 })
 
