@@ -16,6 +16,6 @@ module.exports = async (req, res, next) => {
 			});
 	} catch (e) {
 		console.log(e);
-		res.status(500).json("SERVER ERROR");
+		res.status(504).json("SERVER ERROR");
 	}
 }
