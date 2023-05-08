@@ -244,12 +244,14 @@ function createRegistryOffice(isAdmin, officeNum) {
 
 function createRegistry() {
     var regisPlace = "123456789123";
+    var regisStaff = "123456789123";
     var car = "123456789123";
     var regisDate = new Date();
     var expiredDate = new Date(regisDate.getTime());
     expiredDate.setMonth(regisDate.getMonth() + 18);
     Registry.create({
         regisPlace: regisPlace,
+        regisStaff: regisStaff,
         car: car,
         regisDate: regisDate,
         expiredDate: expiredDate
@@ -284,18 +286,24 @@ async function connect_CarCarOwners(carNum) {
     }
 }
 
+const ObjectId = require('mongoose').Types.ObjectId;
 async function connect_RegistryCarStaff(carNum) {
     var carID = await Cars.find({});
     var registryID = await Registry.find({});
     var staffID = await Staff.find({
         isAdmin: 0
-    });
+    }).select("_id workFor");
     for (let i = 0; i < carNum; i++) {
+        let rand = getRandomNumber(0, staffID.length - 1);
         Registry.updateOne({
             _id: registryID[i]
         }, {
-            regisPlace: staffID[getRandomNumber(0, staffID.length - 1)],
+            regisStaff: new ObjectId(staffID[rand]['_id']),
             car: carID[i]
+        }).updateOne({
+            _id: registryID[i]
+        }, {
+            regisPlace: new ObjectId(staffID[rand]['workFor'])
         }).then(() => {
             // console.log("Successfully updated");
         }).catch((err) => {
@@ -382,27 +390,27 @@ async function main() {
     // const db = mongoose.connection;
     // db.dropDatabase();
 
+
+    var adminNum = 50;
+    var staffNum = 1200;
+    var registryDepartmentNum = 1;
+    var registryOfficeNum = 100;
+    var carOwnerNum = 3000;
+    var carNum = carOwnerNum;
+    var registryNum = carNum;
+
     // await createCollection();
     // await CarOwners.deleteMany({});
     // await Cars.deleteMany({});
     // await Registry.deleteMany({});
     // await RegistryOffice.deleteMany({});
     // await Staff.deleteMany({});
-
-    var adminNum = 50;
-    var staffNum = 1050;
-    var registryDepartmentNum = 1;
-    var registryOfficeNum = 150;
-    var carOwnerNum = 3000;
-    var carNum = carOwnerNum;
-    var registryNum = carNum;
-
     // await createAll(adminNum, staffNum, registryDepartmentNum, registryOfficeNum, carOwnerNum, carNum, registryNum);
+
     connect_CarCarOwners(carNum);
     connect_RegistryCarStaff(carNum);
     connect_RegistryofficeStaff(adminNum, 1);
-    connect_RegistryofficeStaff(7, 0);
-
+    connect_RegistryofficeStaff(12, 0);
 
 
     // const SALT_WORK_FACTOR = 10;

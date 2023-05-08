@@ -4,9 +4,13 @@ const car = require("./Cars");
 const Staff = require("./Staff");
 
 const registrySchema = new mongoose.Schema({
-	regisPlace: {
+	regisStaff: {
 		type: mongoose.Schema.Types.ObjectId,
 		ref: "Staff",
+	},
+	regisPlace: {
+		type: mongoose.Schema.Types.ObjectId,
+		ref: "RegistryOffice",
 	},
 	car: {
 		type: mongoose.Schema.Types.ObjectId,
