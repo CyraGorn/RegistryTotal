@@ -26,19 +26,6 @@ app.use(bodyParser.json());
 var router = require(__dirname + '/router.js');
 app.use('/api', router);
 
-// app.get('/', AuthMiddleware, async (req, res, next) => {
-//     var token = req.cookies.session;
-//     var kq = jwt.verify(token).then((kq) => {
-//         StaffModel.findOne({
-//             email: kq['user']
-//         }).populate('workFor').then((data) => {
-//             res.json(data);
-//         }).catch((err) => {
-//             res.status(500).json("SERVER ERROR")
-//         })
-//     });
-// });
-
 app.post('/login', async (req, res) => {
     var email = req.body.email;
     var password = req.body.password;
@@ -65,10 +52,7 @@ app.post('/login', async (req, res) => {
     }
 });
 
-app.get('/logout', (req, res) => {
-    res.clearCookie('session');
-    return res.redirect('/login');
-});
+// app.get('/')
 
 app.use(function (req, res, next) {
     res.status(404).send("Not Found");

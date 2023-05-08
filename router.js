@@ -15,7 +15,7 @@ router.get('/staff', AuthMiddleware, (req, res) => {
         StaffModel.findOne({
             email: kq['user']
         }).populate('workFor').then((data) => {
-            res.json(data);
+            res.status(200).json(data);
         }).catch((err) => {
             res.status(500).json("SERVER ERROR")
         })
@@ -42,50 +42,13 @@ router.get('/staff', AuthMiddleware, (req, res) => {
     // }
 });
 
-router.get('/office', (req, res) => {
-    var index = req.query.index;
-    index = Number(index);
-    if (!isNaN(index) && index >= 0) {
-        var skipIndex = (index - 1) * PAGE_SIZE;
-        OfficeModel.find({
-
-        }).skip(skipIndex).limit(PAGE_SIZE).populate('staff').then((data) => {
-            res.json(data);
-        }).catch((err) => {
-            res.status(500).json("Unexpected Error: " + err);
-        })
-    } else {
-        OfficeModel.find({
-
-        }).populate('staff').then((data) => {
-            res.json(data);
-        }).catch((err) => {
-            res.status(500).json("Unexpected Error");
-        })
-    }
+router.get('/office/:id', (req, res) => {
+    var id = req.params.id;
+    OfficeModel.findById(id)
 });
 
 router.get('/car', (req, res) => {
-    var index = req.query.index;
-    index = Number(index);
-    if (!isNaN(index) && index >= 0) {
-        var skipIndex = (index - 1) * PAGE_SIZE;
-        OwnerModel.find({
 
-        }).skip(skipIndex).limit(PAGE_SIZE).populate('ownedCar').then((data) => {
-            res.json(data);
-        }).catch((err) => {
-            res.status(500).json("Unexpected Error: " + err);
-        })
-    } else {
-        OwnerModel.find({
-
-        }).populate('ownedCar').then((data) => {
-            res.json(data);
-        }).catch((err) => {
-            res.status(500).json("Unexpected Error");
-        })
-    }
 })
 
 module.exports = router;
