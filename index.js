@@ -27,7 +27,7 @@ var router = require(__dirname + '/router.js');
 app.use('/api', router);
 
 app.get('/', AuthMiddleware, async (req, res, next) => {
-    var token = req.cookies.session
+    var token = req.cookies.session;
     var kq = jwt.verify(token).then((kq) => {
         StaffModel.findOne({
             email: kq['user']
@@ -53,15 +53,17 @@ app.post('/login', async (req, res) => {
             return res.status(422).json({ error: 'Invalid email or password' });
         }
         var token = jwt.sign({
-            user: email,
-            isAdmin: user.isAdmin
+            user: email
         }).then((token) => {
             res.cookie('session', token, { httpOnly: true, sameSite: true, secure: true });
-            res.redirect('/');
+            data = {
+                session: token
+            }
+            res.json(data);
         })
     } catch (err) {
         console.log(err);
-        return res.status(500).json("SERVER ERROR")
+        res.status(500).json("SERVER ERROR")
     }
 });
 
