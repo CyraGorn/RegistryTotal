@@ -62,6 +62,6 @@ app.use(function (req, res, next) {
     res.status(404).send("Not Found");
 });
 
-app.listen(process.env.PORT, () => {
+app.listen(PORT, () => {
     console.log(`Listening on http://localhost:${process.env.PORT}`);
 });

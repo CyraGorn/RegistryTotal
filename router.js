@@ -10,20 +10,24 @@ var router = express.Router();
 
 const PAGE_SIZE = 100;
 
-router.get('/staff', (req, res) => {
+router.get('/staff', async (req, res) => {
     let token;
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
         token = req.headers.authorization.split(' ')[1];
-        var kq = jwt.verify(token).then((kq) => {
+        try {
+            var kq = await jwt.verify(token);
             StaffModel.findOne({
                 email: kq['user']
             }).select("data isAdmin email workFor").populate('workFor').then((data) => {
                 res.status(200).json(data);
             }).catch((err) => {
                 console.log(err);
-                res.status(404).json("NOT FOUND");
+                return res.status(404).json("NOT FOUND");
             })
-        });
+        } catch (err) {
+            res.status(404).json("NOT FOUND");
+        }
+
     } else {
         res.status(404).json("NOT FOUND");
     }
