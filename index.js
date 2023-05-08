@@ -72,43 +72,10 @@ app.get('/logout', (req, res) => {
     return res.redirect('/login');
 });
 
-app.post('/forgot-password', function (req, res) {
-    var email = req.body.email;
-    var token = generateToken();
-    var expirationTime = moment().add(1, 'hour').toDate();
-    saveTokenInDatabase(email, token, expirationTime);
-    sendResetEmail(email, token);
-    res.render('forgot-password-confirm');
-});
-
-app.get('/reset-password/:token', function (req, res) {
-    var token = req.params.token;
-    var isValidToken = checkIfTokenIsValid(token);
-    if (isValidToken) {
-        res.render('reset-password-form', { token: token });
-    } else {
-        res.render('invalid-token');
-    }
-});
-
-app.post('/reset-password/:token', function (req, res) {
-    var token = req.params.token;
-    var isValidToken = checkIfTokenIsValid(token);
-    if (isValidToken) {
-        var newPassword = req.body.newPassword;
-        var email = getEmailFromToken(token);
-        resetPasswordInDatabase(email, newPassword);
-        deleteTokenFromDatabase(email, token);
-        res.render('reset-password-confirm');
-    } else {
-        res.render('invalid-token');
-    }
-});
-
 app.use(function (req, res, next) {
     res.status(404).send("Not Found");
 });
 
-app.listen(PORT, () => {
+app.listen(process.env.PORT, () => {
     console.log(`Listening on http://localhost:${process.env.PORT}`);
 });
