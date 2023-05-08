@@ -32,9 +32,9 @@ app.get('/', AuthMiddleware, async (req, res, next) => {
         StaffModel.findOne({
             email: kq['user']
         }).populate('workFor').then((data) => {
-            return res.json(data);
+            res.json(data);
         }).catch((err) => {
-            return res.status(500).json("SERVER ERROR")
+            res.status(500).json("SERVER ERROR")
         })
     });
 });
@@ -45,12 +45,12 @@ app.post('/login', async (req, res) => {
     try {
         const user = await StaffModel.findOne({ email: email });
         if (!user) {
-            return res.status(422).json({ error: 'Invalid email or password' });
+            res.status(422).json({ error: 'Invalid email or password' });
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            return res.status(422).json({ error: 'Invalid email or password' });
+            res.status(422).json({ error: 'Invalid email or password' });
         }
         var token = jwt.sign({
             user: email
@@ -67,18 +67,9 @@ app.post('/login', async (req, res) => {
     }
 });
 
-app.get('/login', (req, res) => {
-    res.clearCookie('session');
-    res.sendFile(__dirname + '/views/login.html');
-})
-
 app.get('/logout', (req, res) => {
     res.clearCookie('session');
     return res.redirect('/login');
-});
-
-app.get('/forgot-password', function (req, res) {
-    res.redirect('http://google.com');
 });
 
 app.post('/forgot-password', function (req, res) {
@@ -118,6 +109,6 @@ app.use(function (req, res, next) {
     res.status(404).send("Not Found");
 });
 
-app.listen(process.env.PORT, () => {
+app.listen(PORT, () => {
     console.log(`Listening on http://localhost:${process.env.PORT}`);
 });
