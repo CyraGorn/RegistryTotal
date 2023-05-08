@@ -11,7 +11,7 @@ var router = express.Router();
 const PAGE_SIZE = 100;
 
 router.get('/staff', AuthMiddleware, (req, res) => {
-    var token = req.cookies._session;
+    var token = req.cookies.session;
     var kq = jwt.verify(token).then((kq) => {
         StaffModel.findOne({
             email: kq['user']
