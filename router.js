@@ -11,13 +11,20 @@ var router = express.Router();
 const PAGE_SIZE = 100;
 
 router.get('/staff', AuthMiddleware, (req, res) => {
-    StaffModel.findOne({
-
-    }).select("data isAdmin email workFor").populate('workFor').then((data) => {
-        res.status(200).json(data);
-    }).catch((err) => {
-        res.status(500).json("SERVER ERROR");
-    })
+    var token = req.cookies.session;
+    if (token === undefined) {
+        res.status(404).json("NOT FOUND");
+    } else {
+        var kq = jwt.verify(token).then((kq) => {
+            StaffModel.findOne({
+                email: kq['user']
+            }).select("data isAdmin email workFor").populate('workFor').then((data) => {
+                res.status(200).json(data);
+            }).catch((err) => {
+                res.status(500).json("SERVER ERROR");
+            })
+        });
+    }
     // var token = req.cookies.session;
     // var kq = jwt.verify(token).then((kq) => {
     //     StaffModel.findOne({
