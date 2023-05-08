@@ -54,12 +54,12 @@ app.post('/login', async (req, res) => {
         }
         var token = jwt.sign({
             user: email
-        }).then((token) => {
+        }).then(async (token) => {
             res.cookie('session', token, { httpOnly: true, sameSite: true, secure: true });
             data = {
                 session: token
             }
-            res.json(data);
+            res.status(200).json(data);
         })
     } catch (err) {
         console.log(err);
@@ -109,6 +109,6 @@ app.use(function (req, res, next) {
     res.status(404).send("Not Found");
 });
 
-app.listen(process.env.PORT, () => {
+app.listen(PORT, () => {
     console.log(`Listening on http://localhost:${process.env.PORT}`);
 });
