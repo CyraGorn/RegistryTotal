@@ -10,7 +10,7 @@ var router = express.Router();
 
 const PAGE_SIZE = 100;
 
-router.get('/staff', (req, res) => {
+router.get('/staff', AuthMiddleware, (req, res) => {
     StaffModel.findOne({
 
     }).select("data isAdmin email workFor").populate('workFor').then((data) => {

@@ -3,7 +3,7 @@ const JWTHelper = require('../helpers/JWTHelper.js');
 module.exports = async (req, res, next) => {
 	try {
 		if (req.cookies.session === undefined) {
-			return res.redirect("/login");
+			res.status(500).json("SERVER ERROR");
 		}
 		return JWTHelper.verify(req.cookies.session)
 			.then(user => {
@@ -12,10 +12,10 @@ module.exports = async (req, res, next) => {
 				next();
 			})
 			.catch((e) => {
-				res.redirect('/logout');
+				res.status(403).json("FORBIDDEN");
 			});
 	} catch (e) {
 		console.log(e);
-		return res.redirect('/logout');
+		res.status(500).json("SERVER ERROR");
 	}
 }
