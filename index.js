@@ -44,23 +44,21 @@ app.post('/login', async (req, res) => {
     var password = req.body.password;
     try {
         const user = await StaffModel.findOne({ email: email });
-        if (!user) {
-            res.status(422).json({ error: 'Invalid email or password' });
-        }
-
         const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
+        if (!user || !isMatch) {
             res.status(422).json({ error: 'Invalid email or password' });
+        } else {
+            var token = jwt.sign({
+                user: email
+            }).then(async (token) => {
+                res.cookie('session', token, { httpOnly: true, sameSite: true, secure: true });
+                data = {
+                    session: token,
+                    user: user
+                }
+                res.status(200).json(data);
+            })
         }
-        var token = jwt.sign({
-            user: email
-        }).then(async (token) => {
-            res.cookie('session', token, { httpOnly: true, sameSite: true, secure: true });
-            data = {
-                session: token
-            }
-            res.status(200).json(data);
-        })
     } catch (err) {
         console.log(err);
         res.status(500).json("SERVER ERROR")
