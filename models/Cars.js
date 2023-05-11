@@ -2,20 +2,6 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const CarOwners = require("./CarOwners");
 
-const registrationCertSchema = new Schema({
-	number: {
-		type: Number,
-		required: true,
-		unique: true,
-	},
-	registrationDate: {
-		type: Date,
-		required: true,
-	},
-}, {
-	collection: "Cars"
-});
-
 const specificationSchema = new Schema({
 	wheelFormula: String,
 	wheelTread: String,
@@ -38,15 +24,15 @@ const specificationSchema = new Schema({
 const carSchema = new Schema({
 	numberPlate: { type: String, required: true, unique: true },
 	owner: { type: mongoose.Schema.Types.ObjectId, ref: "CarOwners" },
+	registry: { type: mongoose.Schema.Types.ObjectId, ref: "Registry" },
 	type: { type: String, required: true },
 	brand: { type: String, required: true },
 	modelCode: { type: String, required: true },
 	engineNumber: { type: String, required: true },
 	chassisNumber: { type: String, required: true },
 	color: { type: String, required: true },
-	manufacturedYear: { type: String, required: true },
+	manufacturedYear: { type: Number, required: true },
 	manufacturedCountry: { type: String, required: true },
-	registrationCert: { type: registrationCertSchema, required: true },
 	specification: { type: specificationSchema, required: true },
 	boughtPlace: { type: String, required: true },
 	purpose: { type: String, required: true },

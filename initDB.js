@@ -7,13 +7,14 @@ var rand = require('random-seed').create();
 //     useUnifiedTopology: true
 // });
 
-mongoose.connect('mongodb+srv://baongo:BB8XZsud1EOx4Cjj@registrytotal.v8gw10b.mongodb.net/registrytotal?retryWrites=true&w=majority', {
+mongoose.connect('mongodb+srv://baongo:BB8XZsud1EOx4Cjj@registrytotal.kfyb4jw.mongodb.net/registrytotal?retryWrites=true&w=majority', {
     useNewUrlParser: true,
     useUnifiedTopology: true
 });
 
 const CarOwners = require('./models/CarOwners');
 const Cars = require('./models/Cars');
+const OutDateCars = require('./models/OutDateCars');
 const Staff = require('./models/Staff');
 const Registry = require('./models/Registry');
 const RegistryOffice = require('./models/RegistryOffice');
@@ -25,6 +26,10 @@ async function createCollection() {
 
     Cars.createCollection().then(function (collection) {
         console.log('Cars is created!');
+    });
+
+    OutDateCars.createCollection().then(function (collection) {
+        console.log('OutDateCars is created!');
     });
 
     Staff.createCollection().then(function (collection) {
@@ -91,7 +96,6 @@ function createPerson() {
         SSN: ssn,
         phone: sdt
     });
-    // Person.create(person);
     return person;
 }
 
@@ -120,8 +124,8 @@ function createSpecification() {
 }
 
 function getRandomNumberPlate() {
-    const regionCodes = ["29", "30", "31", "32", "33", "34", "35", "36", "37", "38"];
-    const serialNum = ["1", "2", "3", "4", "5", "6"];
+    const regionCodes = ["19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42"];
+    const serialNum = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
     const serialChar = ["A", "B", "C", "D", "E", "F", "G", "H", "K", "L", "M"];
 
     let plateNumber = '';
@@ -137,17 +141,13 @@ function getRandomNumberPlate() {
 
 function createCars(numberPlate, index) {
     var specification = createSpecification();
-    var registrationCert = {
-        number: index,
-        registrationDate: createDate("01/01/2020", "03/31/2023"),
-    }
     var owner = "123456789123";
-    var types = ['Sedan', 'SUV', 'Hatchback', 'Pickup Truck'];
+    var types = ['Xe tải', 'SUV', 'Hatchback', 'Sedan', 'Coupe', 'Xe bán tải', 'Rơ moóc', 'Xe đầu kéo'];
     var brands = ['Toyota', 'Honda', 'Kia', 'Ford', 'Hyundai', 'Mitsubishi'];
-    var colors = ['white', 'black', 'silver', 'red', 'blue', 'grey'];
-    var countries = ['Japan', 'Korea', 'Thailand'];
-    var places = ['Ho Chi Minh City', 'Hanoi', 'Da Nang', 'Can Tho'];
-    var purposes = ['personal', 'business'];
+    var colors = ['Trắng', 'Đen', 'Bạc', 'Đỏ', 'Xanh lục', 'Xám', 'Xanh lam', 'Tím', 'Vàng', 'Hồng'];
+    var countries = ['Nhật Bản', 'Hàn Quốc', 'Thái Lan', 'Trung Quốc', 'Nga', 'Hoa Kỳ', 'Đức'];
+    var places = ["Thành phố Hà Nội", "Tỉnh Hà Giang", "Tỉnh Cao Bằng", "Tỉnh Bắc Kạn", "Tỉnh Tuyên Quang", "Tỉnh Lào Cai", "Tỉnh Điện Biên", "Tỉnh Lai Châu", "Tỉnh Sơn La", "Tỉnh Yên Bái", "Tỉnh Hoà Bình", "Tỉnh Thái Nguyên", "Tỉnh Lạng Sơn", "Tỉnh Quảng Ninh", "Tỉnh Bắc Giang", "Tỉnh Phú Thọ", "Tỉnh Vĩnh Phúc", "Tỉnh Bắc Ninh", "Tỉnh Hải Dương", "Thành phố Hải Phòng", "Tỉnh Hưng Yên", "Tỉnh Thái Bình", "Tỉnh Hà Nam", "Tỉnh Nam Định", "Tỉnh Ninh Bình", "Tỉnh Thanh Hóa", "Tỉnh Nghệ An", "Tỉnh Hà Tĩnh", "Tỉnh Quảng Bình", "Tỉnh Quảng Trị", "Tỉnh Thừa Thiên Huế", "Thành phố Đà Nẵng", "Tỉnh Quảng Nam", "Tỉnh Quảng Ngãi", "Tỉnh Bình Định", "Tỉnh Phú Yên", "Tỉnh Khánh Hòa", "Tỉnh Ninh Thuận", "Tỉnh Bình Thuận", "Tỉnh Kon Tum", "Tỉnh Gia Lai", "Tỉnh Đắk Lắk", "Tỉnh Đắk Nông", "Tỉnh Lâm Đồng", "Tỉnh Bình Phước", "Tỉnh Tây Ninh", "Tỉnh Bình Dương", "Tỉnh Đồng Nai", "Tỉnh Bà Rịa - Vũng Tàu", "Thành phố Hồ Chí Minh", "Tỉnh Long An", "Tỉnh Tiền Giang", "Tỉnh Bến Tre", "Tỉnh Trà Vinh", "Tỉnh Vĩnh Long", "Tỉnh Đồng Tháp", "Tỉnh An Giang", "Tỉnh Kiên Giang", "Thành phố Cần Thơ", "Tỉnh Hậu Giang", "Tỉnh Sóc Trăng", "Tỉnh Bạc Liêu", "Tỉnh Cà Mau"];
+    var purposes = ['Cá nhân', 'Kinh doanh'];
 
     var type = types[Math.floor(Math.random() * types.length)];
     var brand = brands[Math.floor(Math.random() * brands.length)];
@@ -159,9 +159,11 @@ function createCars(numberPlate, index) {
     var manufacturedCountry = countries[Math.floor(Math.random() * countries.length)];
     var boughtPlace = places[Math.floor(Math.random() * places.length)];
     var purpose = purposes[Math.floor(Math.random() * purposes.length)];
+    var registry = "123456789123";
     Cars.create({
         numberPlate: numberPlate,
         owner: owner,
+        registry: registry,
         type: type,
         brand: brand,
         modelCode: modelCode,
@@ -170,7 +172,6 @@ function createCars(numberPlate, index) {
         color: color,
         manufacturedCountry: manufacturedCountry,
         manufacturedYear: manufacturedYear,
-        registrationCert: registrationCert,
         specification: specification,
         boughtPlace: boughtPlace,
         purpose: purpose
@@ -246,8 +247,9 @@ function createRegistry() {
     var regisPlace = "123456789123";
     var regisStaff = "123456789123";
     var car = "123456789123";
-    var regisDate = new Date();
-    var expiredDate = new Date(regisDate.getTime());
+    var regisDate = createDate("01/01/2022", "05/12/2023");
+    regisDate = new Date(regisDate);
+    var expiredDate = new Date(regisDate);
     expiredDate.setMonth(regisDate.getMonth() + 18);
     Registry.create({
         regisPlace: regisPlace,
@@ -256,6 +258,209 @@ function createRegistry() {
         regisDate: regisDate,
         expiredDate: expiredDate
     });
+}
+
+async function updateRegistry() {
+    var allCar = await Registry.find({}).select("car regisPlace regisDate expiredDate").populate({
+        path: "car",
+        select: "type manufacturedYear email specification.permissibleCarry purpose"
+    });
+    for (let i = 0; i < allCar.length; i++) {
+        var tmp = allCar[i]['car'];
+        if (tmp['type'] == "Xe tải" || tmp['type'] == "Xe đầu kéo" || tmp['type'] == "Rơ moóc") {
+            if (2023 - tmp['manufacturedYear'] >= 20) {
+                var regist = allCar[i]['regisDate'];
+                regist = new Date(regist);
+                var expired = new Date(regist);
+                expired.setMonth(regist.getMonth() + 3);
+                Registry.findByIdAndUpdate(allCar[i]['_id'], {
+                    expiredDate: expired
+                }).then((data) => {
+                    console.log("ok");
+                });
+                continue;
+            }
+            if (tmp['type'] == "Xe tải" || tmp['type'] == "Xe đầu kéo") {
+                if (2023 - tmp['manufacturedYear'] > 7) {
+                    var regist = allCar[i]['regisDate'];
+                    regist = new Date(regist);
+                    var expired = new Date(regist);
+                    expired.setMonth(regist.getMonth() + 6);
+                    Registry.findByIdAndUpdate(allCar[i]['_id'], {
+                        expiredDate: expired
+                    }).then((data) => {
+                        console.log("ok");
+                    });
+                    continue;
+                } else {
+                    var regist = allCar[i]['regisDate'];
+                    regist = new Date(regist);
+                    var expired = new Date(regist);
+                    expired.setMonth(regist.getMonth() + 12);
+                    Registry.findByIdAndUpdate(allCar[i]['_id'], {
+                        expiredDate: expired
+                    }).then((data) => {
+                        console.log("ok");
+                    });
+                    continue;
+                }
+            } else {
+                if (2023 - tmp['manufacturedYear'] > 12) {
+                    var regist = allCar[i]['regisDate'];
+                    regist = new Date(regist);
+                    var expired = new Date(regist);
+                    expired.setMonth(regist.getMonth() + 6);
+                    Registry.findByIdAndUpdate(allCar[i]['_id'], {
+                        expiredDate: expired
+                    }).then((data) => {
+                        console.log("ok");
+                    });
+                    continue;
+                } else {
+                    var regist = allCar[i]['regisDate'];
+                    regist = new Date(regist);
+                    var expired = new Date(regist);
+                    expired.setMonth(regist.getMonth() + 12);
+                    Registry.findByIdAndUpdate(allCar[i]['_id'], {
+                        expiredDate: expired
+                    }).then((data) => {
+                        console.log("ok");
+                    });
+                    continue;
+                }
+            }
+        } else {
+            if (tmp['specification']['permissibleCarry'] >= 10) {
+                if (2023 - tmp['manufacturedYear'] >= 15) {
+                    var regist = allCar[i]['regisDate'];
+                    regist = new Date(regist);
+                    var expired = new Date(regist);
+                    expired.setMonth(regist.getMonth() + 3);
+                    Registry.findByIdAndUpdate(allCar[i]['_id'], {
+                        expiredDate: expired
+                    }).then((data) => {
+                        console.log("ok");
+                    });
+                    continue;
+                } else if (2023 - tmp['manufacturedYear'] > 5) {
+                    var regist = allCar[i]['regisDate'];
+                    regist = new Date(regist);
+                    var expired = new Date(regist);
+                    expired.setMonth(regist.getMonth() + 6);
+                    Registry.findByIdAndUpdate(allCar[i]['_id'], {
+                        expiredDate: expired
+                    }).then((data) => {
+                        console.log("ok");
+                    });
+                    continue;
+                } else {
+                    var regist = allCar[i]['regisDate'];
+                    regist = new Date(regist);
+                    var expired = new Date(regist);
+                    expired.setMonth(regist.getMonth() + 12);
+                    Registry.findByIdAndUpdate(allCar[i]['_id'], {
+                        expiredDate: expired
+                    }).then((data) => {
+                        console.log("ok");
+                    });
+                    continue;
+                }
+            }
+            if (tmp['purpose'] == "business") {
+                if (2023 - tmp['manufacturedYear'] > 5) {
+                    var regist = allCar[i]['regisDate'];
+                    regist = new Date(regist);
+                    var expired = new Date(regist);
+                    expired.setMonth(regist.getMonth() + 6);
+                    Registry.findByIdAndUpdate(allCar[i]['_id'], {
+                        expiredDate: expired
+                    }).then((data) => {
+                        console.log("ok");
+                    });
+                    continue;
+                } else {
+                    var regist = allCar[i]['regisDate'];
+                    regist = new Date(regist);
+                    var expired = new Date(regist);
+                    expired.setMonth(regist.getMonth() + 12);
+                    Registry.findByIdAndUpdate(allCar[i]['_id'], {
+                        expiredDate: expired
+                    }).then((data) => {
+                        console.log("ok");
+                    });
+                    continue;
+                }
+            } else {
+                if (2023 - tmp['manufacturedYear'] > 20) {
+                    var regist = allCar[i]['regisDate'];
+                    regist = new Date(regist);
+                    var expired = new Date(regist);
+                    expired.setMonth(regist.getMonth() + 6);
+                    Registry.findByIdAndUpdate(allCar[i]['_id'], {
+                        expiredDate: expired
+                    }).then((data) => {
+                        console.log("ok");
+                    });
+                    continue;
+                } else if (2023 - tmp['manufacturedYear'] > 7) {
+                    var regist = allCar[i]['regisDate'];
+                    regist = new Date(regist);
+                    var expired = new Date(regist);
+                    expired.setMonth(regist.getMonth() + 12);
+                    Registry.findByIdAndUpdate(allCar[i]['_id'], {
+                        expiredDate: expired
+                    }).then((data) => {
+                        console.log("ok");
+                    });
+                    continue;
+                } else {
+                    var regist = allCar[i]['regisDate'];
+                    regist = new Date(regist);
+                    var expired = new Date(regist);
+                    expired.setMonth(regist.getMonth() + 24);
+                    Registry.findByIdAndUpdate(allCar[i]['_id'], {
+                        expiredDate: expired
+                    }).then((data) => {
+                        console.log("ok");
+                    });
+                    continue;
+                }
+            }
+        }
+    }
+}
+
+async function createOutDateCars() {
+    var allRegistry = await Registry.find({
+
+    }).select("regisPlace expiredDate car _id");
+    for (let i = 0; i < allRegistry.length; i++) {
+        var expire = allRegistry[i]['expiredDate'];
+        var now = new Date();
+        var oneMonthFromNow = new Date();
+        oneMonthFromNow.setMonth(oneMonthFromNow.getMonth() + 1);
+        var status = "";
+        var flag = 1;
+        if (expire >= now && expire <= oneMonthFromNow) {
+            status = "Nearly Expired";
+            flag = 0;
+        } else if (expire <= now) {
+            status = "Expired";
+            flag = 0;
+        }
+        if (flag == 0) {
+            OutDateCars.create({
+                regisPlace: allRegistry[i]['regisPlace'],
+                carID: allRegistry[i]['car'],
+                status: status,
+                registryID: allRegistry[i]['_id']
+            }).then((data) => {
+
+            }).catch((err) => {
+                console.log(err);
+            });
+        }
+    }
 }
 
 async function connect_CarCarOwners(carNum) {
@@ -295,15 +500,18 @@ async function connect_RegistryCarStaff(carNum) {
     }).select("_id workFor");
     for (let i = 0; i < carNum; i++) {
         let rand = getRandomNumber(0, staffID.length - 1);
-        Registry.updateOne({
-            _id: registryID[i]
-        }, {
+        Registry.findByIdAndUpdate(registryID[i]['_id'], {
+            regisPlace: new ObjectId(staffID[rand]['workFor']),
             regisStaff: new ObjectId(staffID[rand]['_id']),
-            car: carID[i]
-        }).updateOne({
-            _id: registryID[i]
-        }, {
-            regisPlace: new ObjectId(staffID[rand]['workFor'])
+            car: carID[i],
+        }).then(() => {
+            // console.log("Successfully updated");
+        }).catch((err) => {
+            console.log(err);
+            return;
+        });
+        Cars.findByIdAndUpdate(carID[i]['_id'], {
+            registry: registryID[i]
         }).then(() => {
             // console.log("Successfully updated");
         }).catch((err) => {
@@ -390,7 +598,6 @@ async function main() {
     // const db = mongoose.connection;
     // db.dropDatabase();
 
-
     var adminNum = 50;
     var staffNum = 1200;
     var registryDepartmentNum = 1;
@@ -402,16 +609,20 @@ async function main() {
     // await createCollection();
     // await CarOwners.deleteMany({});
     // await Cars.deleteMany({});
+    // await OutDateCars.deleteMany({});
     // await Registry.deleteMany({});
     // await RegistryOffice.deleteMany({});
     // await Staff.deleteMany({});
     // await createAll(adminNum, staffNum, registryDepartmentNum, registryOfficeNum, carOwnerNum, carNum, registryNum);
 
-    connect_CarCarOwners(carNum);
-    connect_RegistryCarStaff(carNum);
-    connect_RegistryofficeStaff(adminNum, 1);
-    connect_RegistryofficeStaff(12, 0);
+    // connect_CarCarOwners(carNum);
+    // connect_RegistryCarStaff(carNum);
+    // connect_RegistryofficeStaff(adminNum, 1);
+    // connect_RegistryofficeStaff(12, 0);
 
+    // updateRegistry();
+
+    // createOutDateCars();
 
     // const SALT_WORK_FACTOR = 10;
     // const bcrypt = require('bcrypt');

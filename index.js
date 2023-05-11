@@ -10,7 +10,7 @@ const mongoose = require("mongoose");
 const bcrypt = require('bcrypt');
 
 
-mongoose.connect('mongodb+srv://baongo:BB8XZsud1EOx4Cjj@registrytotal.v8gw10b.mongodb.net/registrytotal?retryWrites=true&w=majority', {
+mongoose.connect('mongodb+srv://baongo:BB8XZsud1EOx4Cjj@registrytotal.kfyb4jw.mongodb.net/registrytotal?retryWrites=true&w=majority', {
     useNewUrlParser: true,
     useUnifiedTopology: true
 });
@@ -38,7 +38,6 @@ app.post('/login', async (req, res) => {
             res.status(422).json({ error: 'Invalid email or password' });
         } else {
             delete user.password;
-            console.log(user);
             var token = jwt.sign({
                 user: user.email,
                 isAdmin: user.isAdmin

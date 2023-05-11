@@ -19,12 +19,6 @@ const registryOfficeSchema = new mongoose.Schema({
         unique: true,
         immutable: true,
         defaut: {},
-        validation: {
-            validators: function (v) {
-                return /\d{3}-\d{3}-\d{4}/.test(v);
-            },
-            message: (props) => "Invalid phone number!"
-        },
     },
     hotMail: {
         type: String,
