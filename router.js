@@ -9,7 +9,7 @@ const ObjectId = require('mongoose').Types.ObjectId;
 
 var router = express.Router();
 
-router.get('/staff', AuthHeader, RestrictAPI, (req, res) => {
+router.get('/staff', AuthHeader, (req, res) => {
     let result = req.result;
     if (result === undefined) {
         res.status(404).json("NOT FOUND");
