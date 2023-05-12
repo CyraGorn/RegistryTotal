@@ -9,7 +9,7 @@ const ObjectId = require('mongoose').Types.ObjectId;
 
 var router = express.Router();
 
-router.get('/staff', AuthHeader, (req, res) => {
+router.get('/staff', AuthHeader, RestrictAPI, (req, res) => {
     let result = req.result;
     if (result === undefined) {
         res.status(404).json("NOT FOUND");
@@ -32,7 +32,6 @@ router.get('/office', AuthHeader, (req, res) => {
         OfficeModel.find({
 
         }).select("name _id").then((data) => {
-            console.log(data.length);
             res.status(200).json(data);
         }).catch((err) => {
             res.status(404).json("NOT FOUND");
