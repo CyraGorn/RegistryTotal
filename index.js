@@ -60,7 +60,7 @@ app.post('/login', async (req, res) => {
 });
 
 app.use(function (req, res, next) {
-    res.status(404).send("Not Found");
+    res.status(404).send("NOT FOUND");
 });
 
 app.listen(process.env.PORT, () => {

@@ -2,28 +2,62 @@ const express = require('express');
 const RestrictAPI = require('./middleware/RestrictAPI.js');
 const AuthHeader = require('./middleware/AuthHeader.js');
 const AuthOffice = require('./middleware/AuthOffice.js');
+const AuthStaffData = require('./middleware/AuthStaffData.js');
 const StaffModel = require('./models/Staff.js');
 const OfficeModel = require('./models/RegistryOffice.js');
-const OwnerModel = require('./models/CarOwners.js');
 const RegistryModel = require('./models/Registry.js');
-const Registry = require('./models/Registry.js');
 const ObjectId = require('mongoose').Types.ObjectId;
 
 var router = express.Router();
 
-router.get('/staff', AuthHeader, (req, res) => {
+router.get('/allstaff', AuthHeader, (req, res) => {
+    let result = req.result;
+    if (result['isAdmin'] !== 1) {
+        return res.status(404).json("NOT FOUND");
+    }
+    StaffModel.find({
+
+    }).select("data isAdmin email workFor").then((data) => {
+        res.status(200).json(data);
+    }).catch((err) => {
+        return res.status(404).json("NOT FOUND");
+    })
+});
+
+router.get('/owninfo', AuthHeader, (req, res) => {
     let result = req.result;
     if (result === undefined) {
         res.status(404).json("NOT FOUND");
     } else {
         StaffModel.findOne({
             email: result['user']
-        }).select("data isAdmin email workFor").populate('workFor').then((data) => {
+        }).select("data isAdmin email workFor").then((data) => {
             res.status(200).json(data);
         }).catch((err) => {
             return res.status(404).json("NOT FOUND");
         })
     }
+});
+
+router.post('/addstaff', AuthHeader, AuthStaffData, (req, res) => {
+    StaffModel.create({
+        data: {
+            name: req.body.name,
+            dateOfBirth: req.body.dob,
+            SSN: req.body.ssn,
+            phone: req.body.phone
+        },
+        isAdmin: req.body.isAdmin,
+        email: req.body.email,
+        password: req.body.password,
+        workFor: req.body.workFor,
+    }).then((data) => {
+        if (data) {
+            return res.status(200).json("SUCCEEDED");
+        }
+    }).catch((err) => {
+        return res.status(500).json("DATA DUPLICATED");
+    });
 });
 
 router.get('/office', AuthHeader, AuthOffice, (req, res) => {

@@ -3,7 +3,7 @@ module.exports = (req, res, next) => {
     return res.status(404).json(remoteAddress);
     // const serverIpAddress = '::1';
     // if (remoteAddress !== serverIpAddress) {
-    //     res.status(404).send("Not Found");
+    //     res.status(404).send("NOT FOUND");
     // }
     // next();
 };
