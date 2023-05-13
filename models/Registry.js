@@ -4,6 +4,10 @@ const car = require("./Cars");
 const Staff = require("./Staff");
 
 const registrySchema = new mongoose.Schema({
+	regisNum: {
+		type: String,
+		unique: true
+	},
 	regisStaff: {
 		type: mongoose.Schema.Types.ObjectId,
 		ref: "Staff",
@@ -18,13 +22,12 @@ const registrySchema = new mongoose.Schema({
 	},
 	regisDate: {
 		type: Date,
-		default: Date.now,
 		required: true,
 	},
 	expiredDate: {
 		type: Date,
 		required: true,
-	},
+	}
 }, {
 	collection: "Registry"
 });

@@ -6,8 +6,7 @@ const carOwnerSchema = new mongoose.Schema({
     data: {
         type: Person.schema
     },
-    email: { type: String, required: true, unique: true },
-    ownedCar: [{ type: mongoose.Schema.Types.ObjectId, ref: "Cars" }]
+    email: { type: String, required: true, unique: true }
 }, {
     collection: "CarOwners"
 });

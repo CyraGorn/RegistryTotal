@@ -40,7 +40,8 @@ app.post('/login', async (req, res) => {
             delete user.password;
             var token = jwt.sign({
                 user: user.email,
-                isAdmin: user.isAdmin
+                isAdmin: user.isAdmin,
+                workFor: user.workFor
             });
             res.cookie('session', token, {
                 httpOnly: true,

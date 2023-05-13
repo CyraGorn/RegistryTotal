@@ -12,7 +12,7 @@ const specificationSchema = new Schema({
 	authorizedPayload: String,
 	authorizedTotalMass: String,
 	authorizedTowedMass: String,
-	permissibleCarry: String,
+	permissibleCarry: Number,
 	fuel: String,
 	engineDisplacement: String,
 	maxOutputToRpmRatio: String,
@@ -36,6 +36,17 @@ const carSchema = new Schema({
 	specification: { type: specificationSchema, required: true },
 	boughtPlace: { type: String, required: true },
 	purpose: { type: String, required: true },
+	certificate: {
+		certDate: {
+			type: Date,
+			required: true
+		},
+		certNum: {
+			type: String,
+			required: true,
+			unique: true
+		},
+	}
 }, {
 	collection: "Cars"
 });

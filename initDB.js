@@ -14,7 +14,6 @@ mongoose.connect('mongodb+srv://baongo:BB8XZsud1EOx4Cjj@registrytotal.kfyb4jw.mo
 
 const CarOwners = require('./models/CarOwners');
 const Cars = require('./models/Cars');
-const OutDateCars = require('./models/OutDateCars');
 const Staff = require('./models/Staff');
 const Registry = require('./models/Registry');
 const RegistryOffice = require('./models/RegistryOffice');
@@ -26,10 +25,6 @@ async function createCollection() {
 
     Cars.createCollection().then(function (collection) {
         console.log('Cars is created!');
-    });
-
-    OutDateCars.createCollection().then(function (collection) {
-        console.log('OutDateCars is created!');
     });
 
     Staff.createCollection().then(function (collection) {
@@ -77,9 +72,9 @@ function createDate(start, end) {
 }
 
 function createPerson() {
-    var ho = ["Nguyen", "Ngo", "Le", "Tran", "Bui", "Ly", "Trieu", "Ma", "Luong"];
-    var dem = ["Van", "Thi", "Duc", "Huu", "Thu", "Ngoc"];
-    var ten = ["Linh", "Nam", "Vuong", "Minh", "Cuong", "Hai", "Ha", "Son", "Hoa", "Trung", "Huong", "Chi", "Tri", "Thao"];
+    var ho = ["Nguyễn", "Ngô", "Lê", "Trần", "Bùi", "Lý", "Triệu", "Ma", "Lương"];
+    var dem = ["Văn", "Thị", "Đức", "Hữu", "Thu", "Ngọc"];
+    var ten = ["Linh", "Nam", "Vương", "Minh", "Cường", "Hải", "Hà", "Sơn", "Hoa", "Trung", "Hương", "Chí", "Chi", "Trí", "Thảo"];
     var namel1 = ho.length;
     var namel2 = dem.length;
     var namel3 = ten.length;
@@ -160,6 +155,9 @@ function createCars(numberPlate, index) {
     var boughtPlace = places[Math.floor(Math.random() * places.length)];
     var purpose = purposes[Math.floor(Math.random() * purposes.length)];
     var registry = "123456789123";
+    var certDate = createDate(`01/01/${manufacturedYear}`, `12/31/${manufacturedYear}`);
+    certDate = new Date(certDate);
+    var certNum = getRandomString(6);
     Cars.create({
         numberPlate: numberPlate,
         owner: owner,
@@ -174,7 +172,11 @@ function createCars(numberPlate, index) {
         manufacturedYear: manufacturedYear,
         specification: specification,
         boughtPlace: boughtPlace,
-        purpose: purpose
+        purpose: purpose,
+        certificate: {
+            certDate: certDate,
+            certNum: certNum
+        }
     });
 }
 
@@ -200,11 +202,9 @@ async function createStaff(index, isAdmin) {
 function createCarOwners(index) {
     var data = createPerson();
     var email = "user" + String(index) + "@gmail.com";
-    var OwnedCar = "123456789123";
     CarOwners.create({
         data: data,
         email: email,
-        ownedCar: OwnedCar
     });
 }
 
@@ -244,6 +244,7 @@ function createRegistryOffice(isAdmin, officeNum) {
 }
 
 function createRegistry() {
+    var regisNum = getRandomString(10);
     var regisPlace = "123456789123";
     var regisStaff = "123456789123";
     var car = "123456789123";
@@ -252,6 +253,7 @@ function createRegistry() {
     var expiredDate = new Date(regisDate);
     expiredDate.setMonth(regisDate.getMonth() + 18);
     Registry.create({
+        regisNum: regisNum,
         regisPlace: regisPlace,
         regisStaff: regisStaff,
         car: car,
@@ -430,39 +432,6 @@ async function updateRegistry() {
     }
 }
 
-async function createOutDateCars() {
-    var allRegistry = await Registry.find({
-
-    }).select("regisPlace expiredDate car _id");
-    for (let i = 0; i < allRegistry.length; i++) {
-        var expire = allRegistry[i]['expiredDate'];
-        var now = new Date();
-        var oneMonthFromNow = new Date();
-        oneMonthFromNow.setMonth(oneMonthFromNow.getMonth() + 1);
-        var status = "";
-        var flag = 1;
-        if (expire >= now && expire <= oneMonthFromNow) {
-            status = "Nearly Expired";
-            flag = 0;
-        } else if (expire <= now) {
-            status = "Expired";
-            flag = 0;
-        }
-        if (flag == 0) {
-            OutDateCars.create({
-                regisPlace: allRegistry[i]['regisPlace'],
-                carID: allRegistry[i]['car'],
-                status: status,
-                registryID: allRegistry[i]['_id']
-            }).then((data) => {
-
-            }).catch((err) => {
-                console.log(err);
-            });
-        }
-    }
-}
-
 async function connect_CarCarOwners(carNum) {
     var carID = await Cars.find({});
     var carOwnerID = await CarOwners.find({});
@@ -471,17 +440,6 @@ async function connect_CarCarOwners(carNum) {
             _id: carID[i]
         }, {
             owner: carOwnerID[i]
-        }).then(() => {
-            // console.log("Successfully updated");
-        }).catch((err) => {
-            console.log(err);
-            return;
-        });
-
-        CarOwners.updateOne({
-            _id: carOwnerID[i]
-        }, {
-            ownedCar: carID[i]
         }).then(() => {
             // console.log("Successfully updated");
         }).catch((err) => {
@@ -602,14 +560,13 @@ async function main() {
     var staffNum = 1200;
     var registryDepartmentNum = 1;
     var registryOfficeNum = 100;
-    var carOwnerNum = 3000;
+    var carOwnerNum = 5000;
     var carNum = carOwnerNum;
     var registryNum = carNum;
 
     // await createCollection();
     // await CarOwners.deleteMany({});
     // await Cars.deleteMany({});
-    // await OutDateCars.deleteMany({});
     // await Registry.deleteMany({});
     // await RegistryOffice.deleteMany({});
     // await Staff.deleteMany({});
@@ -621,8 +578,6 @@ async function main() {
     // connect_RegistryofficeStaff(12, 0);
 
     // updateRegistry();
-
-    // createOutDateCars();
 
     // const SALT_WORK_FACTOR = 10;
     // const bcrypt = require('bcrypt');

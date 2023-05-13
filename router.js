@@ -1,10 +1,12 @@
 const express = require('express');
 const RestrictAPI = require('./middleware/RestrictAPI.js');
 const AuthHeader = require('./middleware/AuthHeader.js');
+const AuthOffice = require('./middleware/AuthOffice.js');
 const StaffModel = require('./models/Staff.js');
 const OfficeModel = require('./models/RegistryOffice.js');
 const OwnerModel = require('./models/CarOwners.js');
 const RegistryModel = require('./models/Registry.js');
+const Registry = require('./models/Registry.js');
 const ObjectId = require('mongoose').Types.ObjectId;
 
 var router = express.Router();
@@ -24,9 +26,9 @@ router.get('/staff', AuthHeader, (req, res) => {
     }
 });
 
-router.get('/office', AuthHeader, (req, res) => {
+router.get('/office', AuthHeader, AuthOffice, (req, res) => {
     let result = req.result;
-    if (result === undefined) {
+    if (result === undefined || result['isAdmin'] === 0) {
         res.status(404).json("NOT FOUND");
     } else {
         OfficeModel.find({
@@ -39,36 +41,87 @@ router.get('/office', AuthHeader, (req, res) => {
     }
 });
 
-
-router.get('/office/:id', AuthHeader, (req, res) => { //office/:id
+router.post('/office/:id/car', AuthHeader, AuthOffice, (req, res) => {
     let id = req.params.id;
+    let time = req.body.time;
+    let unit = String(req.body.unit);
     let result = req.result;
-    if (result === undefined) {
+    let timeDict = {
+        month: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"],
+        quarter: ["1", "2", "3", "4"],
+        year: "1"
+    }
+    if (result === undefined || id === undefined || time === undefined
+        || unit === undefined || !(time in timeDict) || !timeDict[time].includes(unit)) {
         res.status(404).json("NOT FOUND");
     } else {
-        try {
-            OfficeModel.findById(new ObjectId(id)).then((off) => {
-                res.status(200).json(off);
-            });
-        } catch {
-            res.status(404).json("NOT FOUND");
+        var yearNow = new Date();
+        yearNow = yearNow.getFullYear();
+        var monthNow = new Date();
+        monthNow = monthNow.getMonth() + 1;
+        var searchQuery = {
+            regisPlace: new ObjectId(id)
+        };
+        if (time === "year") {
+            searchQuery['regisDate'] = {
+                $gte: new Date(yearNow, 0, 1),
+                $lt: new Date(yearNow + 1, 0, 1)
+            }
+        } else if (time === "quarter") {
+            searchQuery['regisDate'] = {
+                $gte: new Date(yearNow, 3 * (Number(unit) - 1), 1),
+                $lt: new Date(yearNow, 3 * Number(unit), 1)
+            }
+        } else {
+            searchQuery['regisDate'] = {
+                $gte: new Date(yearNow, Number(unit) - 1, 1),
+                $lt: new Date(yearNow, Number(unit), 1)
+            }
         }
+        RegistryModel.find(searchQuery).select("car regisDate expiredDate").populate("car").then((data) => {
+            res.status(200).json(data);
+        }).catch((err) => {
+            res.status(404).json("NOT FOUND");
+        })
     }
 });
 
-router.get('/office/:id/car', AuthHeader, (req, res) => { //office/:id/car
+router.post('/office/:id/outdatecar', AuthHeader, AuthOffice, (req, res) => {
     let id = req.params.id;
+    let status = req.body.status;
     let result = req.result;
-    if (result === undefined) {
+    if (result === undefined || id === undefined || status === undefined
+        || (status !== "expire" && status !== "soon")) {
         res.status(404).json("NOT FOUND");
     } else {
-        RegistryModel.find({
+        var now = new Date();
+        var thisMonth = new Date();
+        thisMonth.setMonth(now.getMonth() + 1);
+        if (thisMonth.getMonth() == 11) {
+            thisMonth = new Date(`01/01/${thisMonth.getFullYear() + 1}`);
+        } else {
+            thisMonth = new Date(`${thisMonth.getMonth() + 1}/01/${thisMonth.getFullYear()}`);
+        }
+        var searchQuery = {
             regisPlace: new ObjectId(id)
-        }).select("regisStaff car regisDate expiredDate").populate("car").populate({
-            path: "regisStaff",
-            select: "data isAdmin email"
+        };
+        if (status === "expire") {
+            searchQuery['expiredDate'] = {
+                $lte: now
+            }
+        } else {
+            searchQuery['expiredDate'] = {
+                $gt: now,
+                $lt: thisMonth
+            }
+        }
+        RegistryModel.find(searchQuery).select("car expiredDate").populate("car").populate({
+            path: "car",
+            populate: {
+                path: "owner",
+                model: "CarOwners"
+            }
         }).then((data) => {
-            console.log(data.length);
             res.status(200).json(data);
         }).catch((err) => {
             res.status(404).json("NOT FOUND");
