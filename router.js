@@ -31,7 +31,10 @@ router.get('/owninfo', AuthHeader, (req, res) => {
     } else {
         StaffModel.findOne({
             email: result['user']
-        }).select("data isAdmin email workFor").then((data) => {
+        }).select("data isAdmin email workFor").populate({
+            path: "workFor",
+            select: "name"
+        }).then((data) => {
             res.status(200).json(data);
         }).catch((err) => {
             return res.status(404).json("NOT FOUND");
@@ -76,15 +79,21 @@ router.get('/office', AuthHeader, AuthOffice, (req, res) => {
 });
 
 router.post('/office/:id/car', AuthHeader, AuthOffice, (req, res) => {
+    // car registed in this office
     let id = req.params.id;
-    let time = req.body.time;
+    let time = String(req.body.time);
     let unit = String(req.body.unit);
     let result = req.result;
     let timeDict = {
         month: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"],
         quarter: ["1", "2", "3", "4"],
-        year: "1"
+        year: [] // from 2021 to now
     }
+    let yearList = new Date();
+    for (var i = 2021; i <= yearList.getFullYear(); i++) {
+        timeDict['year'].push(String(i));
+    }
+
     if (result === undefined || id === undefined || time === undefined
         || unit === undefined || !(time in timeDict) || !timeDict[time].includes(unit)) {
         res.status(404).json("NOT FOUND");
@@ -96,10 +105,13 @@ router.post('/office/:id/car', AuthHeader, AuthOffice, (req, res) => {
         var searchQuery = {
             regisPlace: new ObjectId(id)
         };
+        if (id === result['workFor'] && result['isAdmin'] === 1) { // all office
+            delete searchQuery['regisPlace']
+        }
         if (time === "year") {
             searchQuery['regisDate'] = {
-                $gte: new Date(yearNow, 0, 1),
-                $lt: new Date(yearNow + 1, 0, 1)
+                $gte: new Date(Number(unit), 0, 1),
+                $lt: new Date(Number(unit) + 1, 0, 1)
             }
         } else if (time === "quarter") {
             searchQuery['regisDate'] = {
@@ -121,6 +133,7 @@ router.post('/office/:id/car', AuthHeader, AuthOffice, (req, res) => {
 });
 
 router.post('/office/:id/outdatecar', AuthHeader, AuthOffice, (req, res) => {
+    // all expire car in this office
     let id = req.params.id;
     let status = req.body.status;
     let result = req.result;
@@ -139,6 +152,9 @@ router.post('/office/:id/outdatecar', AuthHeader, AuthOffice, (req, res) => {
         var searchQuery = {
             regisPlace: new ObjectId(id)
         };
+        if (id === result['workFor'] && result['isAdmin'] === 1) { // all office
+            delete searchQuery['regisPlace']
+        }
         if (status === "expire") {
             searchQuery['expiredDate'] = {
                 $lte: now
@@ -162,5 +178,7 @@ router.post('/office/:id/outdatecar', AuthHeader, AuthOffice, (req, res) => {
         })
     }
 });
+
+// router.post('/office/alloutdate',)
 
 module.exports = router;
