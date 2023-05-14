@@ -71,13 +71,16 @@ function checkValidSSN(ssn) {
 }
 
 async function checkValidOffice(isAdmin, workFor) {
+    if ((isAdmin === 1 && workFor !== "Cục đăng kiểm Việt Nam")
+        || (isAdmin !== 1 && workFor === "Cục đăng kiểm Việt Nam")) {
+        return null;
+    }
     var office = await OfficeModel.findOne({
-        isAdmin: 1
-    }).select("_id").catch((err) => {
+        name: workFor
+    }).select("name _id").catch((err) => {
         return null;
     });
-    if ((isAdmin === 1 && workFor !== office['_id'].toString())
-        || (isAdmin !== 1 && workFor === office['_id'].toString())) {
+    if (!office) {
         return null;
     }
     return office;
@@ -124,5 +127,6 @@ module.exports = async (req, res, next) => {
     if (!validoffice) {
         return res.status(422).json("OFFICE IS INVALID");
     }
+    req.officeid = validoffice['_id'];
     next();
 }

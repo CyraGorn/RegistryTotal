@@ -18,7 +18,12 @@ router.get('/allstaff', AuthHeader, (req, res) => {
     StaffModel.find({
 
     }).select("data isAdmin email workFor").then((data) => {
-        res.status(200).json(data);
+        var total = data.length;
+        var returnRes = {
+            total: total,
+            data: data
+        }
+        res.status(200).json(returnRes);
     }).catch((err) => {
         return res.status(404).json("NOT FOUND");
     })
@@ -53,7 +58,7 @@ router.post('/addstaff', AuthHeader, AuthStaffData, (req, res) => {
         isAdmin: req.body.isAdmin,
         email: req.body.email,
         password: req.body.password,
-        workFor: req.body.workFor,
+        workFor: req.officeid,
     }).then((data) => {
         if (data) {
             return res.status(200).json("SUCCEEDED");
@@ -70,7 +75,27 @@ router.get('/office', AuthHeader, AuthOffice, (req, res) => {
     } else {
         OfficeModel.find({
 
-        }).select("name _id").then((data) => {
+        }).select("name _id hotline hotMail address").then((data) => {
+            var total = data.length;
+            var returnRes = {
+                total: total,
+                data: data
+            }
+            res.status(200).json(returnRes);
+        }).catch((err) => {
+            res.status(404).json("NOT FOUND");
+        })
+    }
+});
+
+router.get('/office/:id', AuthHeader, AuthOffice, (req, res) => {
+    let result = req.result;
+    if (result === undefined) {
+        res.status(404).json("NOT FOUND");
+    } else {
+        OfficeModel.find({
+            _id: req.params.id
+        }).populate("staff").then((data) => {
             res.status(200).json(data);
         }).catch((err) => {
             res.status(404).json("NOT FOUND");
@@ -79,7 +104,7 @@ router.get('/office', AuthHeader, AuthOffice, (req, res) => {
 });
 
 router.post('/office/:id/car', AuthHeader, AuthOffice, (req, res) => {
-    // car registed in this office
+    // Car registed in this office
     let id = req.params.id;
     let time = String(req.body.time);
     let unit = String(req.body.unit);
@@ -87,10 +112,10 @@ router.post('/office/:id/car', AuthHeader, AuthOffice, (req, res) => {
     let timeDict = {
         month: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"],
         quarter: ["1", "2", "3", "4"],
-        year: [] // from 2021 to now
+        year: [] // 3 years from now - 2 to now
     }
     let yearList = new Date();
-    for (var i = 2021; i <= yearList.getFullYear(); i++) {
+    for (var i = yearList.getFullYear() - 2; i <= yearList.getFullYear(); i++) {
         timeDict['year'].push(String(i));
     }
 
@@ -124,16 +149,26 @@ router.post('/office/:id/car', AuthHeader, AuthOffice, (req, res) => {
                 $lt: new Date(yearNow, Number(unit), 1)
             }
         }
-        RegistryModel.find(searchQuery).select("car regisDate expiredDate").populate("car").then((data) => {
-            res.status(200).json(data);
+        RegistryModel.find(searchQuery).select("car").populate({
+            path: "car",
+            select: "certificate numberPlate owner"
+        }).then((data) => {
+            var total = data.length;
+            var returnRes = {
+                total: total,
+                data: data
+            }
+            res.status(200).json(returnRes);
         }).catch((err) => {
+            console.log(err);
             res.status(404).json("NOT FOUND");
         })
     }
 });
 
 router.post('/office/:id/outdatecar', AuthHeader, AuthOffice, (req, res) => {
-    // all expire car in this office
+    // All expire car and soon expire car in this office
+    // Separate by parameter status
     let id = req.params.id;
     let status = req.body.status;
     let result = req.result;
@@ -165,14 +200,20 @@ router.post('/office/:id/outdatecar', AuthHeader, AuthOffice, (req, res) => {
                 $lt: thisMonth
             }
         }
-        RegistryModel.find(searchQuery).select("car expiredDate").populate("car").populate({
+        RegistryModel.find(searchQuery).select("car expiredDate").populate({
             path: "car",
             populate: {
                 path: "owner",
                 model: "CarOwners"
-            }
+            },
+            select: "certificate numberPlate owner"
         }).then((data) => {
-            res.status(200).json(data);
+            var total = data.length;
+            var returnRes = {
+                total: total,
+                data: data
+            }
+            res.status(200).json(returnRes);
         }).catch((err) => {
             res.status(404).json("NOT FOUND");
         })
