@@ -24,7 +24,7 @@ const specificationSchema = new Schema({
 const carSchema = new Schema({
 	numberPlate: { type: String, required: true, unique: true },
 	owner: { type: mongoose.Schema.Types.ObjectId, ref: "CarOwners" },
-	registry: { type: mongoose.Schema.Types.ObjectId, ref: "Registry" },
+	registry: [{ type: mongoose.Schema.Types.ObjectId, ref: "Registry" }],
 	type: { type: String, required: true },
 	brand: { type: String, required: true },
 	modelCode: { type: String, required: true },

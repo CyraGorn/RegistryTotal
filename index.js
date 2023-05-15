@@ -8,6 +8,7 @@ const AuthMiddleware = require('./middleware/AuthMiddleware.js');
 const jwt = require('./helpers/JWTHelper.js');
 const mongoose = require("mongoose");
 const bcrypt = require('bcrypt');
+const { strict } = require('assert');
 
 
 mongoose.connect('mongodb+srv://baongo:BB8XZsud1EOx4Cjj@registrytotal.kfyb4jw.mongodb.net/registrytotal?retryWrites=true&w=majority', {
@@ -39,20 +40,20 @@ app.post('/login', async (req, res) => {
         } else {
             delete user.password;
             var token = jwt.sign({
+                id: user._id,
                 user: user.email,
                 isAdmin: user.isAdmin,
                 workFor: user.workFor
             });
             res.cookie('session', token, {
                 httpOnly: true,
-                sameSite: true,
+                sameSite: 'strict',
                 secure: true,
             });
             data = {
-                session: token,
-                user: user
+                session: token
             }
-            res.status(200).json(data);
+            res.status(200).json("Login successfull");
         }
     } catch (err) {
         res.status(422).json({ error: 'Invalid email or password' });

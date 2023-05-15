@@ -154,14 +154,13 @@ function createCars(numberPlate, index) {
     var manufacturedCountry = countries[Math.floor(Math.random() * countries.length)];
     var boughtPlace = places[Math.floor(Math.random() * places.length)];
     var purpose = purposes[Math.floor(Math.random() * purposes.length)];
-    var registry = "123456789123";
     var certDate = createDate(`01/01/${manufacturedYear}`, `12/31/${manufacturedYear}`);
     certDate = new Date(certDate);
     var certNum = getRandomString(6);
     Cars.create({
         numberPlate: numberPlate,
         owner: owner,
-        registry: registry,
+        registry: [],
         type: type,
         brand: brand,
         modelCode: modelCode,
@@ -195,7 +194,8 @@ async function createStaff(index, isAdmin) {
         isAdmin: isAdmin,
         email: email,
         password: password,
-        workFor: workFor
+        workFor: workFor,
+        registed: []
     });
 }
 
@@ -227,7 +227,7 @@ function createRegistryOffice(isAdmin, officeNum) {
             name = `Trung tâm đăng kiểm số ${map[address]} ${address}`;
         }
         var hotline = "0" + generateUniqueString(-6, 100, 999);
-        var hotmail = `randomemail${i + 1}@gmail.com`;
+        var hotmail = `office${i + 1}@gmail.com`;
         if (isAdmin == 1) {
             hotmail = "registrytotal@vr.com.vn";
         }
@@ -248,7 +248,7 @@ function createRegistry() {
     var regisPlace = "123456789123";
     var regisStaff = "123456789123";
     var car = "123456789123";
-    var regisDate = createDate("01/01/2022", "05/12/2023");
+    var regisDate = createDate("01/01/2021", "12/31/2021");
     regisDate = new Date(regisDate);
     var expiredDate = new Date(regisDate);
     expiredDate.setMonth(regisDate.getMonth() + 18);
@@ -269,7 +269,7 @@ async function updateRegistry() {
     });
     for (let i = 0; i < allCar.length; i++) {
         var tmp = allCar[i]['car'];
-        if (tmp['type'] == "Xe tải" || tmp['type'] == "Xe đầu kéo" || tmp['type'] == "Rơ moóc") {
+        if (tmp['type'] === "Xe tải" || tmp['type'] === "Xe đầu kéo" || tmp['type'] === "Rơ moóc") {
             if (2023 - tmp['manufacturedYear'] >= 20) {
                 var regist = allCar[i]['regisDate'];
                 regist = new Date(regist);
@@ -456,19 +456,29 @@ async function connect_RegistryCarStaff(carNum) {
     var staffID = await Staff.find({
         isAdmin: 0
     }).select("_id workFor");
-    for (let i = 0; i < carNum; i++) {
+    for (let i = 0; i < registryID.length; i++) {
         let rand = getRandomNumber(0, staffID.length - 1);
         Registry.findByIdAndUpdate(registryID[i]['_id'], {
             regisPlace: new ObjectId(staffID[rand]['workFor']),
             regisStaff: new ObjectId(staffID[rand]['_id']),
-            car: carID[i],
+            car: carID[i % carNum],
         }).then(() => {
             // console.log("Successfully updated");
         }).catch((err) => {
             console.log(err);
             return;
         });
-        Cars.findByIdAndUpdate(carID[i]['_id'], {
+        Staff.findByIdAndUpdate(staffID[rand]['_id'], {
+            $push: {
+                registed: registryID[i]['_id']
+            }
+        }).then(() => {
+            // console.log("Successfully updated");
+        }).catch((err) => {
+            console.log(err);
+            return;
+        });
+        Cars.findByIdAndUpdate(carID[i % carNum]['_id'], {
             registry: registryID[i]
         }).then(() => {
             // console.log("Successfully updated");
@@ -477,6 +487,37 @@ async function connect_RegistryCarStaff(carNum) {
             return;
         });
     }
+    // for (let i = 0; i < carNum; i++) {
+    //     let rand = getRandomNumber(0, staffID.length - 1);
+    //     Registry.findByIdAndUpdate(registryID[i]['_id'], {
+    //         regisPlace: new ObjectId(staffID[rand]['workFor']),
+    //         regisStaff: new ObjectId(staffID[rand]['_id']),
+    //         car: carID[i],
+    //     }).then(() => {
+    //         // console.log("Successfully updated");
+    //     }).catch((err) => {
+    //         console.log(err);
+    //         return;
+    //     });
+    //     Staff.findByIdAndUpdate(staffID[rand]['_id'], {
+    //         $push: {
+    //             registed: registryID[i]['_id']
+    //         }
+    //     }).then(() => {
+    //         // console.log("Successfully updated");
+    //     }).catch((err) => {
+    //         console.log(err);
+    //         return;
+    //     });
+    //     Cars.findByIdAndUpdate(carID[i]['_id'], {
+    //         registry: registryID[i]
+    //     }).then(() => {
+    //         // console.log("Successfully updated");
+    //     }).catch((err) => {
+    //         console.log(err);
+    //         return;
+    //     });
+    // }
 }
 
 async function connect_RegistryofficeStaff(maxStaffInOneOffice, isAdmin) {
@@ -577,7 +618,7 @@ async function main() {
     // connect_RegistryofficeStaff(adminNum, 1);
     // connect_RegistryofficeStaff(12, 0);
 
-    // updateRegistry();
+    updateRegistry();
 
     // const SALT_WORK_FACTOR = 10;
     // const bcrypt = require('bcrypt');

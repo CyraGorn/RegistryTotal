@@ -20,7 +20,8 @@ const StaffSchema = new mongoose.Schema({
     workFor: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "RegistryOffice"
-    }
+    },
+    registed: [{ type: mongoose.Schema.Types.ObjectId, ref: "Registry" }]
 }, {
     collection: "Staff"
 });

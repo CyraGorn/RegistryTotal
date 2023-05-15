@@ -6,6 +6,7 @@ const AuthStaffData = require('./middleware/AuthStaffData.js');
 const StaffModel = require('./models/Staff.js');
 const OfficeModel = require('./models/RegistryOffice.js');
 const RegistryModel = require('./models/Registry.js');
+const CarModel = require('./models/Cars.js');
 const ObjectId = require('mongoose').Types.ObjectId;
 
 var router = express.Router();
@@ -36,14 +37,32 @@ router.get('/owninfo', AuthHeader, (req, res) => {
     } else {
         StaffModel.findOne({
             email: result['user']
-        }).select("data isAdmin email workFor").populate({
+        }).select("data isAdmin email workFor _id registed").populate({
             path: "workFor",
             select: "name"
-        }).then((data) => {
+        }).then(async (data) => {
             res.status(200).json(data);
         }).catch((err) => {
             return res.status(404).json("NOT FOUND");
         })
+    }
+});
+
+router.get('/inspection/:id', AuthHeader, async (req, res) => {
+    let result = req.result;
+    if (result === undefined) {
+        res.status(404).json("NOT FOUND");
+    } else {
+        var registryInspection = await RegistryModel.findOne({
+            _id: req.params.id
+        }).select("regisStaff regisNum car regisDate expiredDate").populate("car").catch((err) => {
+            return res.status(404).json("NOT FOUND");
+        });
+        if (result['isAdmin'] !== 1 && result['id'] !== registryInspection['regisStaff']) {
+            return res.status(404).json("NOT FOUND");
+        } else {
+            return res.status(200).json(registryInspection);
+        }
     }
 });
 
@@ -64,7 +83,7 @@ router.post('/addstaff', AuthHeader, AuthStaffData, (req, res) => {
             return res.status(200).json("SUCCEEDED");
         }
     }).catch((err) => {
-        return res.status(500).json("DATA DUPLICATED");
+        return res.status(500).json("User already existed");
     });
 });
 
@@ -149,10 +168,41 @@ router.post('/office/:id/car', AuthHeader, AuthOffice, (req, res) => {
                 $lt: new Date(yearNow, Number(unit), 1)
             }
         }
-        RegistryModel.find(searchQuery).select("car").populate({
-            path: "car",
-            select: "certificate numberPlate owner"
-        }).then((data) => {
+        // RegistryModel.find(searchQuery).select('car').distinct('car').then((data) => {
+        //     var total = data.length;
+        //     var returnRes = {
+        //         total: total,
+        //         data: data
+        //     }
+        //     res.status(200).json(returnRes);
+        // }).catch((err) => {
+        //     console.log(err);
+        //     res.status(404).json("NOT FOUND");
+        // });
+        RegistryModel.aggregate([
+            {
+                $match: searchQuery
+            },
+            {
+                $group: {
+                    _id: "$car"
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    car: "$_id",
+                }
+            },
+            {
+                $lookup: {
+                    from: "Cars",
+                    localField: "car",
+                    foreignField: "_id",
+                    as: "car"
+                }
+            }
+        ]).then((data) => {
             var total = data.length;
             var returnRes = {
                 total: total,
@@ -161,8 +211,7 @@ router.post('/office/:id/car', AuthHeader, AuthOffice, (req, res) => {
             res.status(200).json(returnRes);
         }).catch((err) => {
             console.log(err);
-            res.status(404).json("NOT FOUND");
-        })
+        });
     }
 });
 
@@ -200,14 +249,57 @@ router.post('/office/:id/outdatecar', AuthHeader, AuthOffice, (req, res) => {
                 $lt: thisMonth
             }
         }
-        RegistryModel.find(searchQuery).select("car expiredDate").populate({
-            path: "car",
-            populate: {
-                path: "owner",
-                model: "CarOwners"
+        // RegistryModel.find(searchQuery).select("car expiredDate").populate({
+        //     path: "car",
+        //     populate: {
+        //         path: "owner",
+        //         model: "CarOwners"
+        //     },
+        //     select: "certificate numberPlate owner"
+        // }).then((data) => {
+        //     var total = data.length;
+        //     var returnRes = {
+        //         total: total,
+        //         data: data
+        //     }
+        //     res.status(200).json(returnRes);
+        // }).catch((err) => {
+        //     console.log(err)
+        //     res.status(404).json("NOT FOUND");
+        // })
+        RegistryModel.aggregate([
+            {
+                $match: searchQuery
             },
-            select: "certificate numberPlate owner"
-        }).then((data) => {
+            {
+                $sort: {
+                    "regisDate": -1
+                }
+            },
+            {
+                $group: {
+                    _id: {
+                        car: "$car",
+                        expiredDate: "$expiredDate"
+                    }
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    car: "$_id.car",
+                    expireDate: "$_id.expiredDate"
+                }
+            },
+            {
+                $lookup: {
+                    from: "Cars",
+                    localField: "car",
+                    foreignField: "_id",
+                    as: "car"
+                }
+            }
+        ]).then((data) => {
             var total = data.length;
             var returnRes = {
                 total: total,
@@ -215,11 +307,9 @@ router.post('/office/:id/outdatecar', AuthHeader, AuthOffice, (req, res) => {
             }
             res.status(200).json(returnRes);
         }).catch((err) => {
-            res.status(404).json("NOT FOUND");
-        })
+            console.log(err);
+        });
     }
 });
-
-// router.post('/office/alloutdate',)
 
 module.exports = router;
