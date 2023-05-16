@@ -53,7 +53,7 @@ app.post('/login', async (req, res) => {
             data = {
                 session: token
             }
-            res.status(200).json("Login successfull");
+            res.status(200).json(data);
         }
     } catch (err) {
         res.status(422).json({ error: 'Invalid email or password' });
