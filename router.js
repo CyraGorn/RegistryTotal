@@ -40,6 +40,14 @@ router.get('/owninfo', AuthHeader, (req, res) => {
         }).select("data isAdmin email workFor _id registed").populate({
             path: "workFor",
             select: "name"
+        }).populate({
+            path: "registed",
+            populate: {
+                path: "car",
+                model: "Cars",
+                select: "numberPlate"
+            },
+            select: "_id regisDate"{
         }).then(async (data) => {
             res.status(200).json(data);
         }).catch((err) => {
