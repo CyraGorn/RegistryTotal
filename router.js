@@ -56,21 +56,18 @@ router.get('/owninfo', AuthHeader, (req, res) => {
     }
 });
 
-router.get('/inspection/:id', AuthHeader, async (req, res) => {
+router.get('/inspection/:id', AuthHeader, (req, res) => {
     let result = req.result;
     if (result === undefined) {
         res.status(404).json("NOT FOUND");
     } else {
-        var registryInspection = await RegistryModel.findOne({
+        RegistryModel.findOne({
             _id: req.params.id
-        }).select("regisStaff regisNum car regisDate expiredDate").populate("car").catch((err) => {
+        }).select("regisStaff regisNum car regisDate expiredDate").populate("car").then((data) => {
+            return res.status(200).json(registryInspection);
+        }).catch((err) => {
             return res.status(404).json("NOT FOUND");
         });
-        if (result['isAdmin'] !== 1 && result['id'] !== registryInspection['regisStaff']) {
-            return res.status(404).json("NOT FOUND");
-        } else {
-            return res.status(200).json(registryInspection);
-        }
     }
 });
 
