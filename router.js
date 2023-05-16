@@ -47,7 +47,7 @@ router.get('/owninfo', AuthHeader, (req, res) => {
                 model: "Cars",
                 select: "numberPlate"
             },
-            select: "_id regisDate"{
+            select: "_id regisDate"
         }).then(async (data) => {
             res.status(200).json(data);
         }).catch((err) => {
