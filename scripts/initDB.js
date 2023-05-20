@@ -2,11 +2,6 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 var rand = require('random-seed').create();
 
-// mongoose.connect('mongodb://localhost/registrytotal', {
-//     useNewUrlParser: true,
-//     useUnifiedTopology: true
-// });
-
 mongoose.connect('mongodb+srv://baongo:BB8XZsud1EOx4Cjj@registrytotal.kfyb4jw.mongodb.net/registrytotal?retryWrites=true&w=majority', {
     useNewUrlParser: true,
     useUnifiedTopology: true
@@ -52,6 +47,29 @@ const getRandomString = (length) => {
     }
     return randomString;
 };
+
+const getRandomAlphabetString = (length) => {
+    let result = '';
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    const charactersLength = characters.length;
+
+    for (let i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+}
+
+const getRandomNumericString = (length) => {
+    let result = '';
+    const characters = '0123456789';
+    const charactersLength = characters.length;
+
+    for (let i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+
+    return result;
+}
 
 function generateUniqueString(lastDigit, min, max) {
     const timestamp = new Date().getTime().toString().slice(lastDigit);
@@ -244,7 +262,8 @@ function createRegistryOffice(isAdmin, officeNum) {
 }
 
 function createRegistry() {
-    var regisNum = getRandomString(10);
+    var regisNum = getRandomNumericString(4) + getRandomAlphabetString(1) + "-" + getRandomNumericString(6);
+    var reportNum = regisNum;
     var regisPlace = "123456789123";
     var regisStaff = "123456789123";
     var car = "123456789123";
@@ -479,7 +498,9 @@ async function connect_RegistryCarStaff(carNum) {
             return;
         });
         Cars.findByIdAndUpdate(carID[i % carNum]['_id'], {
-            registry: registryID[i]
+            $push: {
+                registry: registryID[i]
+            }
         }).then(() => {
             // console.log("Successfully updated");
         }).catch((err) => {

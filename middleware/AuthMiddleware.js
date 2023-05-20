@@ -1,4 +1,4 @@
-const JWTHelper = require('../helpers/JWTHelper.js');
+const JWTHelper = require('../utils/JWTHelpers.js');
 
 module.exports = (req, res, next) => {
 	try {

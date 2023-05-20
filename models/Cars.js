@@ -3,52 +3,52 @@ const Schema = mongoose.Schema;
 const CarOwners = require("./CarOwners");
 
 const specificationSchema = new Schema({
-	wheelFormula: String,
-	wheelTread: String,
-	overallDimension: String,
-	containerDimension: String,
-	lengthBase: String,
-	kerbMass: String,
-	authorizedPayload: String,
-	authorizedTotalMass: String,
-	authorizedTowedMass: String,
-	permissibleCarry: Number,
-	fuel: String,
-	engineDisplacement: String,
-	maxOutputToRpmRatio: String,
-	numberOfTiresAndTireSize: String,
+    wheelFormula: String,
+    wheelTread: String,
+    overallDimension: String,
+    containerDimension: String,
+    lengthBase: String,
+    kerbMass: String,
+    authorizedPayload: String,
+    authorizedTotalMass: String,
+    authorizedTowedMass: String,
+    permissibleCarry: Number,
+    fuel: String,
+    engineDisplacement: String,
+    maxOutputToRpmRatio: String,
+    numberOfTiresAndTireSize: String,
 }, {
-	collection: "Cars"
+    collection: "Cars"
 });
 
 const carSchema = new Schema({
-	numberPlate: { type: String, required: true, unique: true },
-	owner: { type: mongoose.Schema.Types.ObjectId, ref: "CarOwners" },
-	registry: [{ type: mongoose.Schema.Types.ObjectId, ref: "Registry" }],
-	type: { type: String, required: true },
-	brand: { type: String, required: true },
-	modelCode: { type: String, required: true },
-	engineNumber: { type: String, required: true },
-	chassisNumber: { type: String, required: true },
-	color: { type: String, required: true },
-	manufacturedYear: { type: Number, required: true },
-	manufacturedCountry: { type: String, required: true },
-	specification: { type: specificationSchema, required: true },
-	boughtPlace: { type: String, required: true },
-	purpose: { type: String, required: true },
-	certificate: {
-		certDate: {
-			type: Date,
-			required: true
-		},
-		certNum: {
-			type: String,
-			required: true,
-			unique: true
-		},
-	}
+    numberPlate: { type: String, required: true, unique: true },
+    owner: { type: mongoose.Schema.Types.ObjectId, ref: "CarOwners" },
+    registry: [{ type: mongoose.Schema.Types.ObjectId, ref: "Registry" }],
+    type: { type: String, required: true },
+    brand: { type: String, required: true },
+    modelCode: { type: String, required: true },
+    engineNumber: { type: String, required: true },
+    chassisNumber: { type: String, required: true },
+    color: { type: String, required: true },
+    manufacturedYear: { type: Number, required: true },
+    manufacturedCountry: { type: String, required: true },
+    specification: { type: specificationSchema, required: true },
+    boughtPlace: { type: String, required: true },
+    purpose: { type: String, required: true },
+    certificate: {
+        certDate: {
+            type: Date,
+            required: true
+        },
+        certNum: {
+            type: String,
+            required: true,
+            unique: true
+        },
+    }
 }, {
-	collection: "Cars"
+    collection: "Cars"
 });
 
 module.exports = mongoose.model("Cars", carSchema);
