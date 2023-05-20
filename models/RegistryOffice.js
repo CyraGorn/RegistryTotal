@@ -7,11 +7,15 @@ const registryOfficeSchema = new mongoose.Schema({
         required: true,
         unique: true,
     },
+    city: {
+        type: String,
+        required: true,
+    },
+    cityCode: Number,
     isAdmin: Number,
     address: {
         type: String,
         required: true,
-        // unique: true,
     },
     hotline: {
         type: String,

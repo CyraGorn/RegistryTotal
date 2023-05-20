@@ -8,12 +8,18 @@ class InspectController {
         }).select("regisStaff regisPlace regisNum car regisDate expiredDate").populate("car").then((data) => {
             return res.status(200).json(data);
         }).catch((err) => {
-            return res.status(404).json("NOT FOUND");
+            return res.status(500).json("SERVER UNAVAILABLE");
         });
     }
 
     static createInspection(req, res) {
+        RegistryModel.create({
 
+        }).then((data) => {
+            return res.status(200).json("SUCCEEDED");
+        }).catch((err) => {
+            return res.status(500).json("SERVER UNAVAILABLE");
+        })
     }
 }
 

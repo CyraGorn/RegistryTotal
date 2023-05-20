@@ -1,17 +1,18 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 var rand = require('random-seed').create();
+const fetch = (url) => import('node-fetch').then(({ default: fetch }) => fetch(url));
 
 mongoose.connect('mongodb+srv://baongo:BB8XZsud1EOx4Cjj@registrytotal.kfyb4jw.mongodb.net/registrytotal?retryWrites=true&w=majority', {
     useNewUrlParser: true,
     useUnifiedTopology: true
 });
 
-const CarOwners = require('./models/CarOwners');
-const Cars = require('./models/Cars');
-const Staff = require('./models/Staff');
-const Registry = require('./models/Registry');
-const RegistryOffice = require('./models/RegistryOffice');
+const CarOwners = require('../models/CarOwners');
+const Cars = require('../models/Cars');
+const Staff = require('../models/Staff');
+const Registry = require('../models/Registry');
+const RegistryOffice = require('../models/RegistryOffice');
 
 async function createCollection() {
     CarOwners.createCollection().then(function (collection) {
@@ -77,6 +78,11 @@ function generateUniqueString(lastDigit, min, max) {
     return String(timestamp) + String(randomNum);
 };
 
+async function loadProvince(url) {
+    const response = await fetch(url);
+    const names = await response.json();
+    return names;
+}
 
 function createDate(start, end) {
     var startDate = new Date(start);
@@ -101,8 +107,8 @@ function createPerson() {
     var rand3 = Math.floor(Math.random() * namel3);
     var name = ho[rand1] + " " + dem[rand2] + " " + ten[rand3];
     var dob = createDate("01/01/1950", "12/31/2003");
-    var ssn = generateUniqueString(-6, 100000, 999999);
-    var sdt = "0" + generateUniqueString(-4, 10000, 99999);
+    var ssn = generateUniqueString(-5, 1000000, 9999999);
+    var sdt = "0" + generateUniqueString(-3, 100000, 999999);
     var person = ({
         name: name,
         dateOfBirth: dob,
@@ -152,14 +158,14 @@ function getRandomNumberPlate() {
     return plateNumber;
 }
 
-function createCars(numberPlate, index) {
+async function createCars(numberPlate, index) {
     var specification = createSpecification();
     var owner = "123456789123";
     var types = ['Xe tải', 'SUV', 'Hatchback', 'Sedan', 'Coupe', 'Xe bán tải', 'Rơ moóc', 'Xe đầu kéo'];
     var brands = ['Toyota', 'Honda', 'Kia', 'Ford', 'Hyundai', 'Mitsubishi'];
     var colors = ['Trắng', 'Đen', 'Bạc', 'Đỏ', 'Xanh lục', 'Xám', 'Xanh lam', 'Tím', 'Vàng', 'Hồng'];
     var countries = ['Nhật Bản', 'Hàn Quốc', 'Thái Lan', 'Trung Quốc', 'Nga', 'Hoa Kỳ', 'Đức'];
-    var places = ["Thành phố Hà Nội", "Tỉnh Hà Giang", "Tỉnh Cao Bằng", "Tỉnh Bắc Kạn", "Tỉnh Tuyên Quang", "Tỉnh Lào Cai", "Tỉnh Điện Biên", "Tỉnh Lai Châu", "Tỉnh Sơn La", "Tỉnh Yên Bái", "Tỉnh Hoà Bình", "Tỉnh Thái Nguyên", "Tỉnh Lạng Sơn", "Tỉnh Quảng Ninh", "Tỉnh Bắc Giang", "Tỉnh Phú Thọ", "Tỉnh Vĩnh Phúc", "Tỉnh Bắc Ninh", "Tỉnh Hải Dương", "Thành phố Hải Phòng", "Tỉnh Hưng Yên", "Tỉnh Thái Bình", "Tỉnh Hà Nam", "Tỉnh Nam Định", "Tỉnh Ninh Bình", "Tỉnh Thanh Hóa", "Tỉnh Nghệ An", "Tỉnh Hà Tĩnh", "Tỉnh Quảng Bình", "Tỉnh Quảng Trị", "Tỉnh Thừa Thiên Huế", "Thành phố Đà Nẵng", "Tỉnh Quảng Nam", "Tỉnh Quảng Ngãi", "Tỉnh Bình Định", "Tỉnh Phú Yên", "Tỉnh Khánh Hòa", "Tỉnh Ninh Thuận", "Tỉnh Bình Thuận", "Tỉnh Kon Tum", "Tỉnh Gia Lai", "Tỉnh Đắk Lắk", "Tỉnh Đắk Nông", "Tỉnh Lâm Đồng", "Tỉnh Bình Phước", "Tỉnh Tây Ninh", "Tỉnh Bình Dương", "Tỉnh Đồng Nai", "Tỉnh Bà Rịa - Vũng Tàu", "Thành phố Hồ Chí Minh", "Tỉnh Long An", "Tỉnh Tiền Giang", "Tỉnh Bến Tre", "Tỉnh Trà Vinh", "Tỉnh Vĩnh Long", "Tỉnh Đồng Tháp", "Tỉnh An Giang", "Tỉnh Kiên Giang", "Thành phố Cần Thơ", "Tỉnh Hậu Giang", "Tỉnh Sóc Trăng", "Tỉnh Bạc Liêu", "Tỉnh Cà Mau"];
+    var places = await loadProvince('https://provinces.open-api.vn/api/');
     var purposes = ['Cá nhân', 'Kinh doanh'];
 
     var type = types[Math.floor(Math.random() * types.length)];
@@ -170,7 +176,9 @@ function createCars(numberPlate, index) {
     var color = colors[Math.floor(Math.random() * colors.length)];
     var manufacturedYear = 2018 - Math.floor(Math.random() * 20);
     var manufacturedCountry = countries[Math.floor(Math.random() * countries.length)];
-    var boughtPlace = places[Math.floor(Math.random() * places.length)];
+    var oneCity = places[Math.floor(Math.random() * places.length)];
+    var city = oneCity['name'];
+    var cityCode = oneCity['code'];
     var purpose = purposes[Math.floor(Math.random() * purposes.length)];
     var certDate = createDate(`01/01/${manufacturedYear}`, `12/31/${manufacturedYear}`);
     certDate = new Date(certDate);
@@ -188,7 +196,10 @@ function createCars(numberPlate, index) {
         manufacturedCountry: manufacturedCountry,
         manufacturedYear: manufacturedYear,
         specification: specification,
-        boughtPlace: boughtPlace,
+        boughtPlace: {
+            city: city,
+            cityCode: Number(cityCode)
+        },
         purpose: purpose,
         certificate: {
             certDate: certDate,
@@ -226,23 +237,30 @@ function createCarOwners(index) {
     });
 }
 
-function createRegistryOffice(isAdmin, officeNum) {
-    var province = ["Thành phố Hà Nội", "Tỉnh Hà Giang", "Tỉnh Cao Bằng", "Tỉnh Bắc Kạn", "Tỉnh Tuyên Quang", "Tỉnh Lào Cai", "Tỉnh Điện Biên", "Tỉnh Lai Châu", "Tỉnh Sơn La", "Tỉnh Yên Bái", "Tỉnh Hoà Bình", "Tỉnh Thái Nguyên", "Tỉnh Lạng Sơn", "Tỉnh Quảng Ninh", "Tỉnh Bắc Giang", "Tỉnh Phú Thọ", "Tỉnh Vĩnh Phúc", "Tỉnh Bắc Ninh", "Tỉnh Hải Dương", "Thành phố Hải Phòng", "Tỉnh Hưng Yên", "Tỉnh Thái Bình", "Tỉnh Hà Nam", "Tỉnh Nam Định", "Tỉnh Ninh Bình", "Tỉnh Thanh Hóa", "Tỉnh Nghệ An", "Tỉnh Hà Tĩnh", "Tỉnh Quảng Bình", "Tỉnh Quảng Trị", "Tỉnh Thừa Thiên Huế", "Thành phố Đà Nẵng", "Tỉnh Quảng Nam", "Tỉnh Quảng Ngãi", "Tỉnh Bình Định", "Tỉnh Phú Yên", "Tỉnh Khánh Hòa", "Tỉnh Ninh Thuận", "Tỉnh Bình Thuận", "Tỉnh Kon Tum", "Tỉnh Gia Lai", "Tỉnh Đắk Lắk", "Tỉnh Đắk Nông", "Tỉnh Lâm Đồng", "Tỉnh Bình Phước", "Tỉnh Tây Ninh", "Tỉnh Bình Dương", "Tỉnh Đồng Nai", "Tỉnh Bà Rịa - Vũng Tàu", "Thành phố Hồ Chí Minh", "Tỉnh Long An", "Tỉnh Tiền Giang", "Tỉnh Bến Tre", "Tỉnh Trà Vinh", "Tỉnh Vĩnh Long", "Tỉnh Đồng Tháp", "Tỉnh An Giang", "Tỉnh Kiên Giang", "Thành phố Cần Thơ", "Tỉnh Hậu Giang", "Tỉnh Sóc Trăng", "Tỉnh Bạc Liêu", "Tỉnh Cà Mau"];
+async function createRegistryOffice(isAdmin, officeNum) {
+    var province = await loadProvince('https://provinces.open-api.vn/api/?depth=2');
     var map = {
 
     };
     for (var i = 0; i < 63; i++) {
-        map[province[i]] = 0;
+        map[province[i]['name']] = 0;
     }
     for (var i = 0; i < officeNum; i++) {
         var name = "";
-        var address = "Thành phố Hà Nội";
+        var city = "";
+        var cityCode = 1;
+        var address = "Quận Nam Từ Liêm - Thành phố Hà Nội";
         if (isAdmin == 1) {
             name = "Cục đăng kiểm Việt Nam";
+            city = "Thành phố Hà Nội";
         } else {
-            address = province[getRandomNumber(0, 62)];
-            map[address]++;
-            name = `Trung tâm đăng kiểm số ${map[address]} ${address}`;
+            var rand1 = getRandomNumber(0, 62);
+            city = province[rand1]['name'];
+            cityCode = province[rand1]['code'];
+            map[city]++;
+            name = `Trung tâm đăng kiểm số ${map[city]} ${city}`;
+            var rand2 = getRandomNumber(0, province[rand1]['districts'].length - 1);
+            address = province[rand1]['districts'][rand2] + " - " + city;
         }
         var hotline = "0" + generateUniqueString(-6, 100, 999);
         var hotmail = `office${i + 1}@gmail.com`;
@@ -252,6 +270,8 @@ function createRegistryOffice(isAdmin, officeNum) {
         var staff = [];
         RegistryOffice.create({
             name: name,
+            city: city,
+            cityCode: Number(cityCode),
             address: address,
             isAdmin: isAdmin,
             hotline: hotline,
@@ -267,7 +287,7 @@ function createRegistry() {
     var regisPlace = "123456789123";
     var regisStaff = "123456789123";
     var car = "123456789123";
-    var regisDate = createDate("01/01/2021", "12/31/2021");
+    var regisDate = createDate("01/01/2021", "05/31/2023");
     regisDate = new Date(regisDate);
     var expiredDate = new Date(regisDate);
     expiredDate.setMonth(regisDate.getMonth() + 18);
@@ -460,7 +480,7 @@ async function connect_CarCarOwners(carNum) {
         }, {
             owner: carOwnerID[i]
         }).then(() => {
-            // console.log("Successfully updated");
+            console.log("Successfully updated");
         }).catch((err) => {
             console.log(err);
             return;
@@ -482,7 +502,7 @@ async function connect_RegistryCarStaff(carNum) {
             regisStaff: new ObjectId(staffID[rand]['_id']),
             car: carID[i % carNum],
         }).then(() => {
-            // console.log("Successfully updated");
+            console.log("Successfully updated");
         }).catch((err) => {
             console.log(err);
             return;
@@ -492,7 +512,7 @@ async function connect_RegistryCarStaff(carNum) {
                 registed: registryID[i]['_id']
             }
         }).then(() => {
-            // console.log("Successfully updated");
+            console.log("Successfully updated");
         }).catch((err) => {
             console.log(err);
             return;
@@ -502,43 +522,12 @@ async function connect_RegistryCarStaff(carNum) {
                 registry: registryID[i]
             }
         }).then(() => {
-            // console.log("Successfully updated");
+            console.log("Successfully updated");
         }).catch((err) => {
             console.log(err);
             return;
         });
     }
-    // for (let i = 0; i < carNum; i++) {
-    //     let rand = getRandomNumber(0, staffID.length - 1);
-    //     Registry.findByIdAndUpdate(registryID[i]['_id'], {
-    //         regisPlace: new ObjectId(staffID[rand]['workFor']),
-    //         regisStaff: new ObjectId(staffID[rand]['_id']),
-    //         car: carID[i],
-    //     }).then(() => {
-    //         // console.log("Successfully updated");
-    //     }).catch((err) => {
-    //         console.log(err);
-    //         return;
-    //     });
-    //     Staff.findByIdAndUpdate(staffID[rand]['_id'], {
-    //         $push: {
-    //             registed: registryID[i]['_id']
-    //         }
-    //     }).then(() => {
-    //         // console.log("Successfully updated");
-    //     }).catch((err) => {
-    //         console.log(err);
-    //         return;
-    //     });
-    //     Cars.findByIdAndUpdate(carID[i]['_id'], {
-    //         registry: registryID[i]
-    //     }).then(() => {
-    //         // console.log("Successfully updated");
-    //     }).catch((err) => {
-    //         console.log(err);
-    //         return;
-    //     });
-    // }
 }
 
 async function connect_RegistryofficeStaff(maxStaffInOneOffice, isAdmin) {
@@ -561,7 +550,7 @@ async function connect_RegistryofficeStaff(maxStaffInOneOffice, isAdmin) {
                     staff: staffID[j]
                 }
             }).then(() => {
-                // console.log("Successfully updated");
+                console.log("Successfully updated");
             }).catch((err) => {
                 console.log(err);
                 return;
@@ -572,7 +561,7 @@ async function connect_RegistryofficeStaff(maxStaffInOneOffice, isAdmin) {
             }, {
                 workFor: registryOfficeID[i]
             }).then(() => {
-                // console.log("Successfully updated");
+                console.log("Successfully updated");
             }).catch((err) => {
                 console.log(err);
                 return;
@@ -624,7 +613,7 @@ async function main() {
     var registryOfficeNum = 100;
     var carOwnerNum = 5000;
     var carNum = carOwnerNum;
-    var registryNum = carNum;
+    var registryNum = 15000;
 
     // await createCollection();
     // await CarOwners.deleteMany({});
@@ -639,38 +628,38 @@ async function main() {
     // connect_RegistryofficeStaff(adminNum, 1);
     // connect_RegistryofficeStaff(12, 0);
 
-    updateRegistry();
+    // updateRegistry();
 
-    // const SALT_WORK_FACTOR = 10;
-    // const bcrypt = require('bcrypt');
-    // async function hashPassword(password) {
-    //     const salt = await new Promise((resolve, reject) => {
-    //         bcrypt.genSalt(SALT_WORK_FACTOR, function (err, salt) {
-    //             if (err) reject(err)
-    //             resolve(salt)
-    //         });
-    //     });
-    //     const hashedPassword = await new Promise((resolve, reject) => {
-    //         bcrypt.hash(password, salt, function (err, hash) {
-    //             if (err) reject(err)
-    //             resolve(hash)
-    //         });
-    //     });
-    //     return hashedPassword;
-    // }
-    // var staff = await Staff.find({});
-    // for (var i = 0; i < staff.length; i++) {
-    //     var s = await hashPassword('12345678');
-    //     Staff.updateOne({
-    //         _id: staff[i]._id
-    //     }, {
-    //         password: String(s)
-    //     }).then(() => {
-    //         console.log(`Successfully updated ${i}`);
-    //     }).catch((err) => {
-    //         console.log(err);
-    //         return;
-    //     });
-    // }
+    const SALT_WORK_FACTOR = 10;
+    const bcrypt = require('bcrypt');
+    async function hashPassword(password) {
+        const salt = await new Promise((resolve, reject) => {
+            bcrypt.genSalt(SALT_WORK_FACTOR, function (err, salt) {
+                if (err) reject(err)
+                resolve(salt)
+            });
+        });
+        const hashedPassword = await new Promise((resolve, reject) => {
+            bcrypt.hash(password, salt, function (err, hash) {
+                if (err) reject(err)
+                resolve(hash)
+            });
+        });
+        return hashedPassword;
+    }
+    var staff = await Staff.find({});
+    for (var i = 0; i < staff.length; i++) {
+        var s = await hashPassword('12345678');
+        Staff.updateOne({
+            _id: staff[i]._id
+        }, {
+            password: String(s)
+        }).then(() => {
+            console.log(`Successfully updated ${i}`);
+        }).catch((err) => {
+            console.log(err);
+            return;
+        });
+    }
 }
 main()

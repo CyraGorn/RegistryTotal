@@ -34,7 +34,16 @@ const carSchema = new Schema({
     manufacturedYear: { type: Number, required: true },
     manufacturedCountry: { type: String, required: true },
     specification: { type: specificationSchema, required: true },
-    boughtPlace: { type: String, required: true },
+    boughtPlace: {
+        city: {
+            type: String,
+            required: true
+        },
+        cityCode: {
+            type: Number,
+            required: true
+        }
+    },
     purpose: { type: String, required: true },
     certificate: {
         certDate: {
