@@ -6,13 +6,13 @@ const specificationSchema = new Schema({
     wheelFormula: String,
     wheelTread: String,
     overallDimension: String,
-    containerDimension: String,
-    lengthBase: String,
+    luggageContainer: String,
+    wheelBase: String,
     kerbMass: String,
     authorizedPayload: String,
     authorizedTotalMass: String,
     authorizedTowedMass: String,
-    permissibleCarry: Number,
+    carriedNo: Number,
     fuel: String,
     engineDisplacement: String,
     maxOutputToRpmRatio: String,
@@ -26,23 +26,16 @@ const carSchema = new Schema({
     owner: { type: mongoose.Schema.Types.ObjectId, ref: "CarOwners" },
     registry: [{ type: mongoose.Schema.Types.ObjectId, ref: "Registry" }],
     type: { type: String, required: true },
-    brand: { type: String, required: true },
+    mark: { type: String, required: true },
     modelCode: { type: String, required: true },
     engineNumber: { type: String, required: true },
     chassisNumber: { type: String, required: true },
-    color: { type: String, required: true },
     manufacturedYear: { type: Number, required: true },
     manufacturedCountry: { type: String, required: true },
     specification: { type: specificationSchema, required: true },
     boughtPlace: {
-        city: {
-            type: String,
-            required: true
-        },
-        cityCode: {
-            type: Number,
-            required: true
-        }
+        type: String,
+        required: true
     },
     purpose: { type: String, required: true },
     certificate: {

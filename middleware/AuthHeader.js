@@ -10,9 +10,9 @@ module.exports = (req, res, next) => {
             req.result = result;
             next();
         } catch (err) {
-            return res.status(404).json("NOT FOUND");
+            return res.status(500).json("UNAUTHORIZED");
         }
     } else {
-        return res.status(404).json("NOT FOUND");
+        return res.status(403).json("UNAUTHORIZED");
     }
 }

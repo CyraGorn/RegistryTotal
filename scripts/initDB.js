@@ -120,20 +120,20 @@ function createPerson() {
 
 function createSpecification() {
     const wheelFormulas = ['4x2', '4x4', '6x4', '6x6'];
-    const fuels = ['Gasoline', 'Diesel', 'Electric'];
+    const fuels = ['Xăng', 'Diesel', 'Điện', 'Dầu'];
     const numberOfTires = [4, 6, 8];
     const tireSizes = ["205/55R16", "225/65R17", "235/45R18", "265/70R16", "215/60R16", "225/40R18"];
     var specification = {
         wheelFormula: wheelFormulas[getRandomNumber(0, 3)],
         wheelTread: `${getRandomNumber(1400, 2000)} mm`,
         overallDimension: `${getRandomNumber(3500, 5000)} x ${getRandomNumber(1500, 2200)} x ${getRandomNumber(1200, 1800)} mm`,
-        containerDimension: `${getRandomNumber(1500, 2500)} x ${getRandomNumber(1000, 1500)} x ${getRandomNumber(800, 1200)} mm`,
-        lengthBase: `${getRandomNumber(2400, 3200)} mm`,
+        luggageContainer: `${getRandomNumber(1500, 2500)} x ${getRandomNumber(1000, 1500)} x ${getRandomNumber(800, 1200)} mm`,
+        wheelBase: `${getRandomNumber(2400, 3200)} mm`,
         kerbMass: `${getRandomNumber(800, 1600)} kg`,
         authorizedPayload: `${getRandomNumber(500, 1000)} kg`,
         authorizedTotalMass: `${getRandomNumber(1500, 3000)} kg`,
         authorizedTowedMass: `${getRandomNumber(1000, 2000)} kg`,
-        permissibleCarry: `${getRandomNumber(4, 7)}`,
+        carriedNo: `${getRandomNumber(4, 7)}`,
         fuel: fuels[getRandomNumber(0, 2)],
         engineDisplacement: `${getRandomNumber(1000, 2000)} cc`,
         maxOutputToRpmRatio: `${getRandomNumber(50, 150)}/${getRandomNumber(4000, 7000)}`,
@@ -161,24 +161,21 @@ function getRandomNumberPlate() {
 async function createCars(numberPlate, index) {
     var specification = createSpecification();
     var owner = "123456789123";
-    var types = ['Xe tải', 'SUV', 'Hatchback', 'Sedan', 'Coupe', 'Xe bán tải', 'Rơ moóc', 'Xe đầu kéo'];
+    var types = ['Xe Tải', 'SUV', 'Hatchback', 'Sedan', 'Coupe', 'Xe Bán Tải', 'Rơ Moóc', 'Xe Đầu Kéo'];
     var brands = ['Toyota', 'Honda', 'Kia', 'Ford', 'Hyundai', 'Mitsubishi'];
-    var colors = ['Trắng', 'Đen', 'Bạc', 'Đỏ', 'Xanh lục', 'Xám', 'Xanh lam', 'Tím', 'Vàng', 'Hồng'];
-    var countries = ['Nhật Bản', 'Hàn Quốc', 'Thái Lan', 'Trung Quốc', 'Nga', 'Hoa Kỳ', 'Đức'];
+    var countries = ['Japan', 'Korea', 'Thailand', 'China', 'Russia', 'United States', 'Germany'];
     var places = await loadProvince('https://provinces.open-api.vn/api/');
-    var purposes = ['Cá nhân', 'Kinh doanh'];
+    var purposes = ['Cá nhân', 'Kinh doanh', 'Cơ quan'];
 
     var type = types[Math.floor(Math.random() * types.length)];
-    var brand = brands[Math.floor(Math.random() * brands.length)];
+    var mark = brands[Math.floor(Math.random() * brands.length)];
     var modelCode = getRandomString(12);
     var engineNumber = Math.random().toString(36).substring(2, 10).toUpperCase();
     var chassisNumber = Math.random().toString(36).substring(2, 15).toUpperCase();
-    var color = colors[Math.floor(Math.random() * colors.length)];
     var manufacturedYear = 2018 - Math.floor(Math.random() * 20);
     var manufacturedCountry = countries[Math.floor(Math.random() * countries.length)];
     var oneCity = places[Math.floor(Math.random() * places.length)];
     var city = oneCity['name'];
-    var cityCode = oneCity['code'];
     var purpose = purposes[Math.floor(Math.random() * purposes.length)];
     var certDate = createDate(`01/01/${manufacturedYear}`, `12/31/${manufacturedYear}`);
     certDate = new Date(certDate);
@@ -188,18 +185,14 @@ async function createCars(numberPlate, index) {
         owner: owner,
         registry: [],
         type: type,
-        brand: brand,
+        mark: mark,
         modelCode: modelCode,
         engineNumber: engineNumber,
         chassisNumber: chassisNumber,
-        color: color,
         manufacturedCountry: manufacturedCountry,
         manufacturedYear: manufacturedYear,
         specification: specification,
-        boughtPlace: {
-            city: city,
-            cityCode: Number(cityCode)
-        },
+        boughtPlace: city,
         purpose: purpose,
         certificate: {
             certDate: certDate,
@@ -248,7 +241,6 @@ async function createRegistryOffice(isAdmin, officeNum) {
     for (var i = 0; i < officeNum; i++) {
         var name = "";
         var city = "";
-        var cityCode = 1;
         var address = "Quận Nam Từ Liêm - Thành phố Hà Nội";
         if (isAdmin == 1) {
             name = "Cục đăng kiểm Việt Nam";
@@ -256,11 +248,10 @@ async function createRegistryOffice(isAdmin, officeNum) {
         } else {
             var rand1 = getRandomNumber(0, 62);
             city = province[rand1]['name'];
-            cityCode = province[rand1]['code'];
             map[city]++;
             name = `Trung tâm đăng kiểm số ${map[city]} ${city}`;
             var rand2 = getRandomNumber(0, province[rand1]['districts'].length - 1);
-            address = province[rand1]['districts'][rand2] + " - " + city;
+            address = province[rand1]['districts'][rand2]['name'] + " - " + city;
         }
         var hotline = "0" + generateUniqueString(-6, 100, 999);
         var hotmail = `office${i + 1}@gmail.com`;
@@ -271,7 +262,6 @@ async function createRegistryOffice(isAdmin, officeNum) {
         RegistryOffice.create({
             name: name,
             city: city,
-            cityCode: Number(cityCode),
             address: address,
             isAdmin: isAdmin,
             hotline: hotline,
@@ -304,11 +294,11 @@ function createRegistry() {
 async function updateRegistry() {
     var allCar = await Registry.find({}).select("car regisPlace regisDate expiredDate").populate({
         path: "car",
-        select: "type manufacturedYear email specification.permissibleCarry purpose"
+        select: "type manufacturedYear email specification.carriedNo purpose modification"
     });
     for (let i = 0; i < allCar.length; i++) {
         var tmp = allCar[i]['car'];
-        if (tmp['type'] === "Xe tải" || tmp['type'] === "Xe đầu kéo" || tmp['type'] === "Rơ moóc") {
+        if (tmp['type'] === "Xe Tải" || tmp['type'] === "Xe Đầu Kéo" || tmp['type'] === "Rơ Moóc") {
             if (2023 - tmp['manufacturedYear'] >= 20) {
                 var regist = allCar[i]['regisDate'];
                 regist = new Date(regist);
@@ -321,7 +311,7 @@ async function updateRegistry() {
                 });
                 continue;
             }
-            if (tmp['type'] == "Xe tải" || tmp['type'] == "Xe đầu kéo") {
+            if (tmp['type'] == "Xe Tải" || tmp['type'] == "Xe Đầu Kéo") {
                 if (2023 - tmp['manufacturedYear'] > 7) {
                     var regist = allCar[i]['regisDate'];
                     regist = new Date(regist);
@@ -371,7 +361,7 @@ async function updateRegistry() {
                 }
             }
         } else {
-            if (tmp['specification']['permissibleCarry'] >= 10) {
+            if (tmp['specification']['carriedNo'] >= 10) {
                 if (2023 - tmp['manufacturedYear'] >= 15) {
                     var regist = allCar[i]['regisDate'];
                     regist = new Date(regist);
@@ -407,7 +397,7 @@ async function updateRegistry() {
                     continue;
                 }
             }
-            if (tmp['purpose'] == "business") {
+            if (tmp['purpose'] == "Kinh doanh") {
                 if (2023 - tmp['manufacturedYear'] > 5) {
                     var regist = allCar[i]['regisDate'];
                     regist = new Date(regist);
@@ -628,38 +618,38 @@ async function main() {
     // connect_RegistryofficeStaff(adminNum, 1);
     // connect_RegistryofficeStaff(12, 0);
 
-    // updateRegistry();
+    updateRegistry();
 
-    const SALT_WORK_FACTOR = 10;
-    const bcrypt = require('bcrypt');
-    async function hashPassword(password) {
-        const salt = await new Promise((resolve, reject) => {
-            bcrypt.genSalt(SALT_WORK_FACTOR, function (err, salt) {
-                if (err) reject(err)
-                resolve(salt)
-            });
-        });
-        const hashedPassword = await new Promise((resolve, reject) => {
-            bcrypt.hash(password, salt, function (err, hash) {
-                if (err) reject(err)
-                resolve(hash)
-            });
-        });
-        return hashedPassword;
-    }
-    var staff = await Staff.find({});
-    for (var i = 0; i < staff.length; i++) {
-        var s = await hashPassword('12345678');
-        Staff.updateOne({
-            _id: staff[i]._id
-        }, {
-            password: String(s)
-        }).then(() => {
-            console.log(`Successfully updated ${i}`);
-        }).catch((err) => {
-            console.log(err);
-            return;
-        });
-    }
+    // const SALT_WORK_FACTOR = 10;
+    // const bcrypt = require('bcrypt');
+    // async function hashPassword(password) {
+    //     const salt = await new Promise((resolve, reject) => {
+    //         bcrypt.genSalt(SALT_WORK_FACTOR, function (err, salt) {
+    //             if (err) reject(err)
+    //             resolve(salt)
+    //         });
+    //     });
+    //     const hashedPassword = await new Promise((resolve, reject) => {
+    //         bcrypt.hash(password, salt, function (err, hash) {
+    //             if (err) reject(err)
+    //             resolve(hash)
+    //         });
+    //     });
+    //     return hashedPassword;
+    // }
+    // var staff = await Staff.find({});
+    // for (var i = 0; i < staff.length; i++) {
+    //     var s = await hashPassword('12345678');
+    //     Staff.updateOne({
+    //         _id: staff[i]._id
+    //     }, {
+    //         password: String(s)
+    //     }).then(() => {
+    //         console.log(`Successfully updated ${i}`);
+    //     }).catch((err) => {
+    //         console.log(err);
+    //         return;
+    //     });
+    // }
 }
 main()

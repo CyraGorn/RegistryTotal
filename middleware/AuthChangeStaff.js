@@ -1,15 +1,12 @@
 const Validation = require('../utils/Validation');
 
 module.exports = async (req, res, next) => {
-    if (req.body.id === undefined || req.body.email === undefined
-        || req.body.password === undefined || req.body.name === undefined
+    if (req.body.email === undefined || req.body.name === undefined
         || req.body.dob === undefined || req.body.ssn === undefined
         || req.body.phone === undefined) {
         return res.status(422).json("MISSING DATA");
     }
-    let id = req.body.id;
     let email = req.body.email;
-    let password = req.body.password;
     let name = req.body.name;
     let dob = req.body.dob;
     let ssn = req.body.ssn;
@@ -31,10 +28,6 @@ module.exports = async (req, res, next) => {
     }
     if (!Validation.checkValidSSN(ssn)) {
         return res.status(422).json("Social security number is invalid, SSN must have 12 numbers");
-    }
-    let validstaff = await Validation.checkValidStaffID(id);
-    if (!validstaff || (validstaff && validstaff['isAdmin'] === 1)) {
-        return res.status(422).json("Invalid staff ID");
     }
     req.name = name;
     next();

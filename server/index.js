@@ -20,7 +20,7 @@ mongoose.connect('mongodb+srv://baongo:BB8XZsud1EOx4Cjj@registrytotal.kfyb4jw.mo
 });
 
 app.use(function (req, res, next) {
-    res.status(404).json("NOT FOUND");
+    return res.status(404).json("NOT FOUND");
 });
 
 module.exports = app;

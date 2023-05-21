@@ -25,7 +25,7 @@ module.exports = async (req, res, next) => {
         return res.status(422).json("Email is invalid");
     }
     if (!Validation.checkValidDOB(dob)) {
-        return res.status(422).json("Date of birth is invalid. User age must be between 18 and 60");
+        return res.status(422).json("Date of birth is invalid. Age must be between 18 and 60");
     }
     if (!Validation.checkValidPhone(phone)) {
         return res.status(422).json("Phone number must have 10 numbers and start with 0");
@@ -33,7 +33,7 @@ module.exports = async (req, res, next) => {
     if (!Validation.checkValidSSN(ssn)) {
         return res.status(422).json("Social security number is invalid, SSN must have 12 numbers");
     }
-    let validoffice = await Validation.checkValidOffice(isAdmin, workFor);
+    let validoffice = await Validation.checkValidOffice(Number(isAdmin), workFor);
     if (!validoffice) {
         return res.status(422).json("Office is invalid. Admin can't work for non-admin center and non-admin staff can't work for admin center");
     }

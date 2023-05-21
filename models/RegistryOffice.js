@@ -11,7 +11,6 @@ const registryOfficeSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    cityCode: Number,
     isAdmin: Number,
     address: {
         type: String,

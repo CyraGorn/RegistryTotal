@@ -35,7 +35,7 @@ class StaffController {
     static getById(req, res) {
         StaffModel.findOne({
             _id: new ObjectId(req.params.id)
-        }).then((data) => {
+        }).populate("workFor").then((data) => {
             return res.status(200).json(data);
         }).catch((err) => {
             return res.status(404).json("NOT FOUND");
@@ -45,16 +45,26 @@ class StaffController {
     static getAllStaff(req, res) {
         StaffModel.find({
 
-        }).select("data isAdmin email workFor").then((data) => {
-            var total = data.length;
-            var returnRes = {
-                total: total,
+        }).select("data isAdmin email workFor _id registed").populate({
+            path: "workFor",
+            select: "name"
+        }).populate({
+            path: "registed",
+            populate: {
+                path: "car",
+                model: "Cars",
+                select: "numberPlate"
+            },
+            select: "_id regisDate"
+        }).then((data) => {
+            var returnData = {
+                length: data.length,
                 data: data
             }
-            res.status(200).json(returnRes);
+            return res.status(200).json(returnData);
         }).catch((err) => {
             return res.status(404).json("NOT FOUND");
-        })
+        });
     }
 
     static getOwnInfo(req, res) {
@@ -75,13 +85,13 @@ class StaffController {
             res.status(200).json(data);
         }).catch((err) => {
             return res.status(404).json("NOT FOUND");
-        })
+        });
     }
 
     static async addStaff(req, res) {
         var staff = await StaffModel.create({
             data: {
-                name: req.body.name,
+                name: req.name,
                 dateOfBirth: req.body.dob,
                 SSN: req.body.ssn,
                 phone: req.body.phone
@@ -106,18 +116,14 @@ class StaffController {
 
     static changeInfo(req, res) {
         let result = req.result;
-        if (result['isAdmin'] !== 1 && result['id'] !== req.body.id) {
-            return res.status(403).json("Unauthorized");
-        }
-        StaffModel.findByIdAndUpdate(req.body.id, {
+        StaffModel.findByIdAndUpdate(result['id'], {
             data: {
                 name: req.name,
                 dateOfBirth: req.body.dob,
                 SSN: req.body.ssn,
                 phone: req.body.phone
             },
-            email: req.body.email,
-            password: req.body.password,
+            email: req.body.email
         }).then((data) => {
             if (data) {
                 return res.status(200).json("SUCCEEDED");

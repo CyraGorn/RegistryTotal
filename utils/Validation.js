@@ -1,5 +1,7 @@
 const OfficeModel = require('../models/RegistryOffice');
 const StaffModel = require('../models/Staff');
+const province = require('../scripts/province.json');
+const country = require('../scripts/country.json');
 
 class validation {
     static removeAscent(str) {
@@ -13,6 +15,31 @@ class validation {
         str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y");
         str = str.replace(/đ/g, "d");
         return str;
+    }
+
+    static checkValidTire(str) {
+        let re = /^\d - \d{2,3}\/\d{2}R\d{2}$/
+        return re.test(str);
+    }
+
+    static checkValidRatio(str) {
+        let re = /^\d{2,3}\/\d{4}$/
+        return re.test(str);
+    }
+
+    static checkValidDimension(str) {
+        let re = /^\d{3,4}[xX]\d{3,4}[xX]\d{3,4}$/
+        return re.test(str);
+    }
+
+    static checkValidWheelFormula(str) {
+        let re = /^\d[xX]\d$/
+        return re.test(str);
+    }
+
+    static checkAlphabetString(str) {
+        let re = /^[a-zA-Z]+$/
+        return re.test(this.removeAscent(str)) && str.length <= 20
     }
 
     static isValid(string) {
@@ -33,6 +60,15 @@ class validation {
         }
         kq = kq.trim();
         return [this.isValid(kq), kq];
+    }
+
+    static checkAlphabetNumericString(str) {
+        let re = /^(?=.*[a-zA-Z])(?=.*[0-9])/
+        return re.test(str) && str.length < 20;
+    }
+
+    static checkNumber(str) {
+        return /^\d+$/.test(str) && Number(str) > 0 && Number(str) < 20000
     }
 
     static checkValidEmail(email) {
@@ -86,6 +122,15 @@ class validation {
         return office;
     }
 
+    static checkValidProvince(name) {
+        for (let i = 0; i < province.length; i++) {
+            if (province[i]['name'] === name) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     static async checkValidStaffID(id) {
         var staff = await StaffModel.findOne({
             _id: id
@@ -96,6 +141,21 @@ class validation {
             return null;
         }
         return staff;
+    }
+
+    static checkValidPlate(plate) {
+        let re1 = /^\d{2}[A-Z]\d{1} - \d{3}\.\d{2}$/
+        let re2 = /^\d{2}[A-Z]\d{1} - \d{4}$/
+        return re1.test(plate) || re2.test(plate);
+    }
+
+    static checkValidCountry(name) {
+        for (let i = 0; i < country.length; i++) {
+            if (country[i]['country'] === name) {
+                return true;
+            }
+        }
+        return false;
     }
 }
 

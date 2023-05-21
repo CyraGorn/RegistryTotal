@@ -33,13 +33,14 @@ class OfficeController {
             name: req.body.name,
             isAdmin: 0,
             address: req.body.address,
+            city: req.body.city,
             hotline: req.body.hotline,
             hotMail: req.body.hotmail,
             staff: []
         }).then((data) => {
             return res.status(200).json("SUCCEEDED");
         }).catch((err) => {
-            console.log(err)
+            console.log(err);
             return res.status(500).json("SERVER UNAVAILABLE");
         });
     }
@@ -120,7 +121,7 @@ class OfficeController {
                 }
                 res.status(200).json(returnRes);
             }).catch((err) => {
-                console.log(err);
+                return res.status(500).json("SERVER UNAVAILABLE");
             });
         }
     }
@@ -162,16 +163,16 @@ class OfficeController {
                     $match: searchQuery
                 },
                 {
-                    $sort: {
-                        "regisDate": -1
-                    }
-                },
-                {
                     $group: {
                         _id: {
                             car: "$car",
                             expiredDate: "$expiredDate"
                         }
+                    }
+                },
+                {
+                    $sort: {
+                        "regisDate": -1
                     }
                 },
                 {
@@ -197,7 +198,7 @@ class OfficeController {
                 }
                 res.status(200).json(returnRes);
             }).catch((err) => {
-                console.log(err);
+                return res.status(500).json("SERVER UNAVAILABLE");
             });
         }
     }
