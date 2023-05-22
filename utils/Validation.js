@@ -1,5 +1,6 @@
 const OfficeModel = require('../models/RegistryOffice');
 const StaffModel = require('../models/Staff');
+const CarModel = require('../models/Cars');
 const province = require('../scripts/province.json');
 const country = require('../scripts/country.json');
 
@@ -120,6 +121,18 @@ class validation {
             return null;
         }
         return office;
+    }
+
+    static async checkExistCar(plate) {
+        let car = await CarModel.findOne({
+            numberPlate: plate
+        }).catch((err) => {
+            return res.status(500).json("SERVER UNAVAILABLE");
+        });
+        if (!car) {
+            return null;
+        }
+        return car;
     }
 
     static checkValidProvince(name) {

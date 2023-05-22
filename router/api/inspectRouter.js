@@ -5,6 +5,7 @@ const InspectController = require('../../controllers/InspectController');
 const router = require('express').Router();
 
 router.post('/add', AuthHeader, AuthAddInspection, InspectController.createInspection);
+router.post('/car/plate', AuthHeader, InspectController.getCarByPlate);
 router.get('/:id', AuthHeader, InspectController.getById);
 
 module.exports = router;

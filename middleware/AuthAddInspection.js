@@ -21,8 +21,8 @@ function validateOwnerData(req, res) {
     return true;
 }
 
-function validateCarData(req, res) {
-    if (!Validation.checkValidPlate(req.body.carNumberPlate,)) {
+async function validateCarData(req, res) {
+    if (!Validation.checkValidPlate(req.body.carNumberPlate)) {
         return "Plate number is invalid";
     }
     if (!Validation.checkValidName(req.body.Type)[0]) {
@@ -55,12 +55,15 @@ function validateCarData(req, res) {
     if (!Validation.checkValidProvince(req.body.bought)) {
         return "Bought place is invalid";
     }
-    if (!Validation.checkValidDOB(req.body.certDate)
-        || Number(req.body.certDate) > now || Number(req.body.certDate) < Number(req.body.ManufacturedYear)) {
-        return "Certificate date mustn't greater than now or less than manufactured year";
-    }
-    if (!Validation.checkAlphabetNumericString(req.body.certNum)) {
-        return "Certificate number mustn't contain special characters and length must be less than 20";
+    let existCar = await Validation.checkExistCar(req.body.carNumberPlate);
+    if (!existCar) {
+        if (!Validation.checkValidDOB(req.body.certDate)
+            || Number(req.body.certDate) > now || Number(req.body.certDate) < Number(req.body.ManufacturedYear)) {
+            return "Certificate date mustn't greater than now or less than manufactured year";
+        }
+        if (!Validation.checkAlphabetNumericString(req.body.certNum)) {
+            return "Certificate number mustn't contain special characters and length must be less than 20";
+        }
     }
     return true;
 }
@@ -127,7 +130,7 @@ function checkFullData(req, res) {
     return true;
 }
 
-module.exports = (req, res, next) => {
+module.exports = async (req, res, next) => {
     let check1 = checkFullData(req, res);
     if (check1 !== true) {
         return res.status(422).json(check1);
@@ -136,7 +139,7 @@ module.exports = (req, res, next) => {
     if (check2 !== true) {
         return res.status(422).json(check2);
     }
-    let check3 = validateCarData(req, res);
+    let check3 = await validateCarData(req, res);
     if (check3 !== true) {
         return res.status(422).json(check3);
     }

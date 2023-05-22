@@ -15,6 +15,27 @@ class InspectController {
         });
     }
 
+    static getCarByPlate(req, res) {
+        let plate = req.body.plate;
+        CarsModel.findOne({
+            numberPlate: plate
+        }).populate("owner").populate({
+            path: "registry",
+            populate: [{
+                path: "regisStaff",
+                select: "data email"
+            }, {
+                path: "regisPlace",
+                select: "name"
+            }],
+            select: "regisStaff regisPlace regisDate expiredDate regisNum"
+        }).then((data) => {
+            return res.status(200).json(data);
+        }).catch((err) => {
+            return res.status(500).json("SERVER UNAVAILABLE");
+        })
+    }
+
     static async createInspection(req, res) {
         let alldata = req.alldata;
         let result = req.result;
