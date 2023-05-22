@@ -55,7 +55,7 @@ class StaffController {
                 model: "Cars",
                 select: "numberPlate"
             },
-            select: "_id regisDate"
+            select: "regisNum regisDate"
         }).then((data) => {
             var returnData = {
                 length: data.length,
@@ -80,7 +80,7 @@ class StaffController {
                 model: "Cars",
                 select: "numberPlate"
             },
-            select: "_id regisDate"
+            select: "regisNum regisDate"
         }).then(async (data) => {
             res.status(200).json(data);
         }).catch((err) => {
