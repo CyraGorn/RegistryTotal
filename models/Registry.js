@@ -8,6 +8,10 @@ const registrySchema = new mongoose.Schema({
         type: String,
         unique: true
     },
+    city: {
+        type: String,
+        require: true
+    },
     regisStaff: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Staff",

@@ -46,83 +46,58 @@ class OfficeController {
     }
 
     static getCarRegisted(req, res) {
+        let result = req.result;
         let id = req.params.id;
         let time = String(req.body.time);
-        let unit = String(req.body.unit);
-        let result = req.result;
-        let timeDict = {
-            month: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"],
-            quarter: ["1", "2", "3", "4"],
-            year: [] // 3 years from now - 2 to now
-        }
-        let yearList = new Date();
-        for (var i = yearList.getFullYear() - 2; i <= yearList.getFullYear(); i++) {
-            timeDict['year'].push(String(i));
-        }
-
+        let city = String(req.body.city);
         if (result === undefined || id === undefined || time === undefined
-            || unit === undefined || !(time in timeDict) || !timeDict[time].includes(unit)) {
-            res.status(404).json("NOT FOUND");
+            || isNaN(time) || city === undefined) {
+            return res.status(404).json("NOT FOUND");
         } else {
-            var yearNow = new Date();
-            yearNow = yearNow.getFullYear();
-            var monthNow = new Date();
-            monthNow = monthNow.getMonth() + 1;
-            var searchQuery = {
-                regisPlace: new ObjectId(id)
-            };
-            if (id === result['workFor'] && result['isAdmin'] === 1) { // all office
-                delete searchQuery['regisPlace']
+            try {
+                var searchQuery = {
+                    regisPlace: new ObjectId(id),
+
+                    regisDate: {
+                        $gte: new Date(Number(time), 0, 1),
+                        $lt: new Date(Number(time) + 1, 0, 1)
+                    }
+                };
+                if (id === result['workFor'] && result['isAdmin'] === 1) { // all office
+                    delete searchQuery['regisPlace']
+                }
+                RegistryModel.aggregate([
+                    {
+                        $match: searchQuery
+                    },
+                    {
+                        $group: {
+                            _id: { month: { $month: "$regisDate" }, year: { $year: "$regisDate" } },
+                            count: { $sum: 1 }
+                        }
+                    },
+                    {
+                        $project: {
+                            _id: 0,
+                            month: "$_id.month",
+                            count: 1
+                        }
+                    }, {
+                        $sort: {
+                            _id: 1,
+                            month: 1
+                        }
+                    },
+                ]).then((data) => {
+                    let sum = 0;
+                    for (var i = 0; i < data.length; i++) {
+                        sum += data[i]['count']
+                    }
+                    return res.status(200).json({ year: time, total: sum, data: data });
+                })
+            } catch {
+                return res.status(404).json("NOT FOUND")
             }
-            if (time === "year") {
-                searchQuery['regisDate'] = {
-                    $gte: new Date(Number(unit), 0, 1),
-                    $lt: new Date(Number(unit) + 1, 0, 1)
-                }
-            } else if (time === "quarter") {
-                searchQuery['regisDate'] = {
-                    $gte: new Date(yearNow, 3 * (Number(unit) - 1), 1),
-                    $lt: new Date(yearNow, 3 * Number(unit), 1)
-                }
-            } else {
-                searchQuery['regisDate'] = {
-                    $gte: new Date(yearNow, Number(unit) - 1, 1),
-                    $lt: new Date(yearNow, Number(unit), 1)
-                }
-            }
-            RegistryModel.aggregate([
-                {
-                    $match: searchQuery
-                },
-                {
-                    $group: {
-                        _id: "$car"
-                    }
-                },
-                {
-                    $project: {
-                        _id: 0,
-                        car: "$_id",
-                    }
-                },
-                {
-                    $lookup: {
-                        from: "Cars",
-                        localField: "car",
-                        foreignField: "_id",
-                        as: "car"
-                    }
-                }
-            ]).then((data) => {
-                var total = data.length;
-                var returnRes = {
-                    total: total,
-                    data: data
-                }
-                res.status(200).json(returnRes);
-            }).catch((err) => {
-                return res.status(500).json("SERVER UNAVAILABLE");
-            });
         }
     }
 

@@ -593,6 +593,30 @@ async function createAll(adminNum, staffNum, registryDepartmentNum, registryOffi
     }
 }
 
+async function updatecity() {
+    let registry = await Registry.find({}).skip(1000).limit(1000).select("_id regisPlace");
+    // let office = await RegistryOffice.find({}).select("_id city");
+    // console.log(registry[0]);
+    // console.log(office[0])
+    for (let i = 0; i < registry.length; i++) {
+        // console.log(registry['regisPlace'])
+        let city = await RegistryOffice.findOne({
+            _id: registry[i]['regisPlace']
+        }).select("city").catch((err) => {
+            console.log(err);
+        });
+        Registry.updateOne({
+            _id: registry[i]
+        }, {
+            city: city['city']
+        }).then((data) => {
+            console.log(i);
+        }).catch((err) => {
+            console.log(err)
+        })
+    }
+}
+
 async function main() {
     // const db = mongoose.connection;
     // db.dropDatabase();
@@ -618,8 +642,8 @@ async function main() {
     // connect_RegistryofficeStaff(adminNum, 1);
     // connect_RegistryofficeStaff(12, 0);
 
-    updateRegistry();
-
+    // updateRegistry();
+    updatecity();
     // const SALT_WORK_FACTOR = 10;
     // const bcrypt = require('bcrypt');
     // async function hashPassword(password) {
