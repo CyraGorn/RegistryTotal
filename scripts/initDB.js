@@ -594,7 +594,7 @@ async function createAll(adminNum, staffNum, registryDepartmentNum, registryOffi
 }
 
 async function updatecity() {
-    let registry = await Registry.find({}).skip(1000).limit(1000).select("_id regisPlace");
+    let registry = await Registry.find({}).skip(12000).limit(3000).select("_id regisPlace");
     // let office = await RegistryOffice.find({}).select("_id city");
     // console.log(registry[0]);
     // console.log(office[0])

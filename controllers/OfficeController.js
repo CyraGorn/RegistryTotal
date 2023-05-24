@@ -45,26 +45,34 @@ class OfficeController {
         });
     }
 
-    static getCarRegisted(req, res) {
+    static async getCarRegisted(req, res) {
         let result = req.result;
         let id = req.params.id;
-        let time = String(req.body.time);
-        let city = String(req.body.city);
+        let time = req.body.time;
+        let city = req.body.city;
+        let workingCity = await OfficeModel.findOne({
+            _id: result['id']
+        }).select("city").catch((err) => {
+            return res.status(500).json("SERVER UNAVAILABLE");
+        });
         if (result === undefined || id === undefined || time === undefined
-            || isNaN(time) || city === undefined) {
+            || isNaN(time) || city === undefined || typeof (city) !== "string"
+            || (result['isAdmin'] !== 1 && city !== "" && city != workingCity['city'])) {
             return res.status(404).json("NOT FOUND");
         } else {
             try {
                 var searchQuery = {
                     regisPlace: new ObjectId(id),
-
                     regisDate: {
                         $gte: new Date(Number(time), 0, 1),
                         $lt: new Date(Number(time) + 1, 0, 1)
                     }
                 };
                 if (id === result['workFor'] && result['isAdmin'] === 1) { // all office
-                    delete searchQuery['regisPlace']
+                    delete searchQuery['regisPlace'];
+                    if (city !== "") {
+                        searchQuery['city'] = city;
+                    }
                 }
                 RegistryModel.aggregate([
                     {
