@@ -3,7 +3,7 @@ const CarsModel = require('../models/Cars');
 const Validation = require('../utils/Validation');
 
 function validateOwnerData(req, res) {
-    if (!Validation.checkValidName(req.body.ownername)[0]) {
+    if (!Validation.checkValidName(req.body.ownername, 20)[0]) {
         return "Name must have at least two words with length smaller than 20 and mustn't contain digits or special characters";
     }
     if (!Validation.checkValidEmail(req.body.owneremail)) {
@@ -25,19 +25,19 @@ async function validateCarData(req, res) {
     if (!Validation.checkValidPlate(req.body.carNumberPlate)) {
         return "Plate number is invalid";
     }
-    if (!Validation.checkValidName(req.body.Type)[0]) {
+    if (!Validation.checkValidName(req.body.Type, 20)[0]) {
         return "Car type mustn't contain digit or special characters or whitespace and length must be less than 20 characters";
     }
-    if (!Validation.checkAlphabetString(req.body.Mark)) {
+    if (!Validation.checkAlphabetString(req.body.Mark, 20)) {
         return "Car brand mustn't contain digit or special characters or whitespace and length must be less than 20 characters";
     }
-    if (!Validation.checkAlphabetNumericString(req.body.ModelCode)) {
+    if (!Validation.checkAlphabetNumericString(req.body.ModelCode, 20)) {
         return "Model code mustn't contain special characters or whitespace and length must be less than 20 characters";
     }
-    if (!Validation.checkAlphabetNumericString(req.body.EngineNumber)) {
+    if (!Validation.checkAlphabetNumericString(req.body.EngineNumber, 20)) {
         return "Engine number mustn't contain special characters or whitespace and length must be less than 20 characters";
     }
-    if (!Validation.checkAlphabetNumericString(req.body.ChassisNumber)) {
+    if (!Validation.checkAlphabetNumericString(req.body.ChassisNumber, 20)) {
         return "Chassis number mustn't contain special characters or whitespace and length must be less than 20 characters";
     }
     if (req.body.purpose != "Cá nhân" && req.body.purpose != "Kinh doanh" && req.body.purpose != "Cơ quan") {
@@ -61,7 +61,7 @@ async function validateCarData(req, res) {
             || Number(req.body.certDate) > now || Number(req.body.certDate) < Number(req.body.ManufacturedYear)) {
             return "Certificate date mustn't greater than now or less than manufactured year";
         }
-        if (!Validation.checkAlphabetNumericString(req.body.certNum)) {
+        if (!Validation.checkAlphabetNumericString(req.body.certNum, 20)) {
             return "Certificate number mustn't contain special characters and length must be less than 20";
         }
     }
@@ -99,7 +99,7 @@ function validateSpecification(req, res) {
     if (!Validation.checkNumber(req.body.CarriedNo)) {
         return "Carry number must be a positive integer";
     }
-    if (!Validation.checkAlphabetString(req.body.FuelType)) {
+    if (!Validation.checkAlphabetString(req.body.FuelType, 20)) {
         return "Fuel is invalid";
     }
     if (!Validation.checkNumber(req.body.engineDisplacement)) {
@@ -159,7 +159,7 @@ module.exports = async (req, res, next) => {
             email: req.body.owneremail
         },
         registry: [],
-        type: Validation.checkValidName(req.body.Type)[1],
+        type: Validation.checkValidName(req.body.Type, 20)[1],
         mark: req.body.Mark,
         modelCode: req.body.ModelCode,
         engineNumber: req.body.EngineNumber,

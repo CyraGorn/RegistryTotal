@@ -91,7 +91,7 @@ class StaffController {
     static async addStaff(req, res) {
         var staff = await StaffModel.create({
             data: {
-                name: req.name,
+                name: req.body.name,
                 dateOfBirth: req.body.dob,
                 SSN: req.body.ssn,
                 phone: req.body.phone
@@ -101,6 +101,7 @@ class StaffController {
             password: req.body.password,
             workFor: req.officeid,
         }).catch((err) => {
+            console.log(err);
             return res.status(500).json("User already existed");
         });
         OfficeModel.findByIdAndUpdate(req.officeid, {

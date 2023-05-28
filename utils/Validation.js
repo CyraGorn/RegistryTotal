@@ -38,17 +38,17 @@ class validation {
         return re.test(str);
     }
 
-    static checkAlphabetString(str) {
+    static checkAlphabetString(str, length) {
         let re = /^[a-zA-Z]+$/
-        return re.test(this.removeAscent(str)) && str.length <= 20
+        return re.test(this.removeAscent(str)) && str.length <= length
     }
 
-    static isValid(string) {
+    static isValid(string, length) {
         var re = /^([a-z]+)((\s{1}[a-z]+){1,})$/g
-        return re.test(this.removeAscent(string)) && (string.length <= 20)
+        return re.test(this.removeAscent(string)) && (string.length <= length)
     }
 
-    static checkValidName(name) {
+    static checkValidName(name, length) {
         name = name.trim();
         var arr = name.split(" ");
         var kq = "";
@@ -60,12 +60,12 @@ class validation {
             }
         }
         kq = kq.trim();
-        return [this.isValid(kq), kq];
+        return [this.isValid(kq, length), kq];
     }
 
-    static checkAlphabetNumericString(str) {
-        let re = /^(?=.*[a-zA-Z])(?=.*[0-9])/
-        return re.test(str) && str.length < 20;
+    static checkAlphabetNumericString(str, length) {
+        let re = /^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9, -]*/
+        return re.test(this.removeAscent(str)) && str.length < length;
     }
 
     static checkNumber(str) {

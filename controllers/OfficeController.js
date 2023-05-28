@@ -1,5 +1,6 @@
 const OfficeModel = require('../models/RegistryOffice');
 const RegistryModel = require('../models/Registry');
+const CarsModel = require('../models/Cars');
 const ObjectId = require('mongoose').Types.ObjectId;
 
 class OfficeController {
@@ -40,8 +41,7 @@ class OfficeController {
         }).then((data) => {
             return res.status(200).json("SUCCEEDED");
         }).catch((err) => {
-            console.log(err);
-            return res.status(500).json("SERVER UNAVAILABLE");
+            return res.status(500).json("DUPLICATE DATA");
         });
     }
 
@@ -109,80 +109,107 @@ class OfficeController {
         }
     }
 
-    static getCarOutDate(req, res) {
-        let id = req.params.id;
-        let status = req.body.status;
+    static async getCarOutDate(req, res) {
         let result = req.result;
+        let id = req.params.id;
+        let status = req.body.status
+        let city = req.body.city;
+        let workingCity = await OfficeModel.findOne({
+            _id: result['id']
+        }).select("city").catch((err) => {
+            return res.status(500).json("SERVER UNAVAILABLE");
+        });
         if (result === undefined || id === undefined || status === undefined
-            || (status !== "expire" && status !== "soon")) {
-            res.status(404).json("NOT FOUND");
+            || (status !== "soon" && status !== "expired")
+            || city === undefined || typeof (city) !== "string"
+            || (result['isAdmin'] !== 1 && city !== "" && city != workingCity['city'])) {
+            return res.status(404).json("NOT FOUND");
         } else {
-            var now = new Date();
-            var thisMonth = new Date();
-            thisMonth.setMonth(now.getMonth() + 1);
-            if (thisMonth.getMonth() == 11) {
-                thisMonth = new Date(`01/01/${thisMonth.getFullYear() + 1}`);
-            } else {
-                thisMonth = new Date(`${thisMonth.getMonth() + 1}/01/${thisMonth.getFullYear()}`);
-            }
-            var searchQuery = {
-                regisPlace: new ObjectId(id)
-            };
-            if (id === result['workFor'] && result['isAdmin'] === 1) { // all office
-                delete searchQuery['regisPlace']
-            }
-            if (status === "expire") {
-                searchQuery['expiredDate'] = {
-                    $lte: now
+            try {
+                var now = new Date();
+                var expireThisMonth = new Date();
+                expireThisMonth.setMonth(now.getMonth() + 1);
+                var searchQueryPlace = {
+                    "registry.regisPlace": new ObjectId(id),
+                };
+                var searchQueryTime = {};
+                if (status === "soon") {
+                    searchQueryTime["expiredDate"] = {
+                        $gte: now,
+                        $lt: expireThisMonth
+                    }
+                } else if (status === "expired") {
+                    searchQueryTime["expiredDate"] = {
+                        $lte: now,
+                    }
                 }
-            } else {
-                searchQuery['expiredDate'] = {
-                    $gt: now,
-                    $lt: thisMonth
-                }
-            }
-            RegistryModel.aggregate([
-                {
-                    $match: searchQuery
-                },
-                {
-                    $group: {
-                        _id: {
-                            car: "$car",
-                            expiredDate: "$expiredDate"
+                if (id === result['workFor'] && result['isAdmin'] === 1) { // all office
+                    delete searchQueryPlace['registry.regisPlace'];
+                    if (city !== "") {
+                        searchQueryPlace["registry.city"] = city;
+                    }
+                } // 4554 492
+                CarsModel.aggregate([
+                    {
+                        $lookup: {
+                            from: "Registry",
+                            localField: "registry",
+                            foreignField: "_id",
+                            as: "registry"
                         }
-                    }
-                },
-                {
-                    $sort: {
-                        "regisDate": -1
-                    }
-                },
-                {
-                    $project: {
-                        _id: 0,
-                        car: "$_id.car",
-                        expireDate: "$_id.expiredDate"
-                    }
-                },
-                {
-                    $lookup: {
-                        from: "Cars",
-                        localField: "car",
-                        foreignField: "_id",
-                        as: "car"
-                    }
-                }
-            ]).then((data) => {
-                var total = data.length;
-                var returnRes = {
-                    total: total,
-                    data: data
-                }
-                res.status(200).json(returnRes);
-            }).catch((err) => {
-                return res.status(500).json("SERVER UNAVAILABLE");
-            });
+                    },
+                    {
+                        $lookup: {
+                            from: "CarOwners",
+                            localField: "owner",
+                            foreignField: "_id",
+                            as: "owner"
+                        }
+                    },
+                    {
+                        $unwind: "$registry"
+                    },
+                    {
+                        $match: searchQueryPlace
+                    },
+                    {
+                        $sort: {
+                            "registry.regisDate": -1,
+                        },
+                    },
+                    {
+                        $group: {
+                            _id: "$_id",
+                            registDate: { $first: "$registry.regisDate" },
+                            numberPlate: { $first: "$numberPlate" },
+                            expiredDate: { $first: "$registry.expiredDate" },
+                            city: { $first: "$registry.city" },
+                            owner: { $first: "$owner" }
+                        },
+                    },
+                    {
+                        $match: searchQueryTime
+                    },
+                    {
+                        $project: {
+                            _id: 0,
+                            numberPlate: 1,
+                            registDate: 1,
+                            expiredDate: 1,
+                            city: 1,
+                            ownerName: "$owner.data.name",
+                            ownerSSN: "$owner.data.SSN",
+                            ownerPhone: "$owner.data.phone",
+                            ownerEmail: "$owner.email"
+                        }
+                    },
+                ]).then((data) => {
+                    let length = data.length
+                    return res.status(200).json({ total: length, data: data });
+                })
+            } catch {
+                return res.status(404).json("NOT FOUND")
+            }
         }
     }
 }

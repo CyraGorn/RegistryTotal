@@ -61,7 +61,17 @@ class InspectController {
             car: existCar['_id'],
             regisDate: new Date(),
             expiredDate: expiredDate
-        }).then((data) => {
+        }).then(async (data) => {
+            let id = data['_id'];
+            await CarsModel.updateOne({
+                numberPlate: existCar['numberPlate']
+            }, {
+                $push: {
+                    registry: id
+                }
+            }).catch((err) => {
+                return res.status(500).json("SERVER UNAVAILABLE");
+            })
             return res.status(200).json({
                 status: "SUCCEEDED",
                 regisNum: regisNum
