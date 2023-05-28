@@ -7,6 +7,7 @@ const router = require('express').Router();
 
 router.get('/', AuthHeader, AuthOffice, AuthAdmin, OfficeController.getAllOffice);
 router.post('/add', AuthHeader, AuthAdmin, AuthAddOffice, OfficeController.addOffice);
+router.get('/recentregis', AuthHeader, OfficeController.getRecentRegistry);
 router.get('/:id', AuthHeader, AuthOffice, OfficeController.getById);
 router.post('/:id/car', AuthHeader, AuthOffice, OfficeController.getCarRegisted);
 router.post('/:id/outdatecar', AuthHeader, AuthOffice, OfficeController.getCarOutDate);
