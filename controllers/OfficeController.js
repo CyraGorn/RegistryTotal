@@ -139,104 +139,125 @@ class OfficeController {
         let id = req.params.id;
         let status = req.body.status
         let city = req.body.city;
+        let countInfo = req.body.info;
         let workingCity = await OfficeModel.findOne({
             _id: result['id']
         }).select("city").catch((err) => {
             return res.status(500).json("SERVER UNAVAILABLE");
         });
-        if (result === undefined || id === undefined || status === undefined
+        if (result === undefined || id === undefined || status === undefined || countInfo === undefined
             || (status !== "soon" && status !== "expired")
             || city === undefined || typeof (city) !== "string"
-            || (result['isAdmin'] !== 1 && city !== "" && city != workingCity['city'])) {
+            || (result['isAdmin'] !== 1 && city !== "" && city != workingCity['city'])
+            || (String(countInfo) !== "1" && String(countInfo) !== "0")) {
             return res.status(404).json("NOT FOUND");
         } else {
-            try {
-                var now = new Date();
-                var expireThisMonth = new Date();
-                expireThisMonth.setMonth(now.getMonth() + 1);
-                var searchQueryPlace = {
-                    "registry.regisPlace": new ObjectId(id),
-                };
-                var searchQueryTime = {};
-                if (status === "soon") {
-                    searchQueryTime["expiredDate"] = {
-                        $gte: now,
-                        $lt: expireThisMonth
-                    }
-                } else if (status === "expired") {
-                    searchQueryTime["expiredDate"] = {
-                        $lte: now,
-                    }
+            var now = new Date();
+            var expireThisMonth = new Date();
+            expireThisMonth.setMonth(now.getMonth() + 1);
+            var searchQueryPlace = {
+                "registry.regisPlace": new ObjectId(id),
+            };
+            if (id === result['workFor'] && result['isAdmin'] === 1) { // all office
+                delete searchQueryPlace['registry.regisPlace'];
+                if (city !== "") {
+                    searchQueryPlace["registry.city"] = city;
                 }
-                if (id === result['workFor'] && result['isAdmin'] === 1) { // all office
-                    delete searchQueryPlace['registry.regisPlace'];
-                    if (city !== "") {
-                        searchQueryPlace["registry.city"] = city;
-                    }
-                } // 4554 492
-                CarsModel.aggregate([
-                    {
-                        $lookup: {
-                            from: "Registry",
-                            localField: "registry",
-                            foreignField: "_id",
-                            as: "registry"
-                        }
-                    },
-                    {
-                        $lookup: {
-                            from: "CarOwners",
-                            localField: "owner",
-                            foreignField: "_id",
-                            as: "owner"
-                        }
-                    },
-                    {
-                        $unwind: "$registry"
-                    },
-                    {
-                        $match: searchQueryPlace
-                    },
-                    {
-                        $sort: {
-                            "registry.regisDate": -1,
-                        },
-                    },
-                    {
-                        $group: {
-                            _id: "$_id",
-                            registDate: { $first: "$registry.regisDate" },
-                            numberPlate: { $first: "$numberPlate" },
-                            expiredDate: { $first: "$registry.expiredDate" },
-                            city: { $first: "$registry.city" },
-                            owner: { $first: "$owner" }
-                        },
-                    },
-                    {
-                        $match: searchQueryTime
-                    },
-                    {
-                        $project: {
-                            _id: 0,
-                            numberPlate: 1,
-                            registDate: 1,
-                            expiredDate: 1,
-                            city: 1,
-                            ownerName: "$owner.data.name",
-                            ownerSSN: "$owner.data.SSN",
-                            ownerPhone: "$owner.data.phone",
-                            ownerEmail: "$owner.email"
-                        }
-                    },
-                ]).then((data) => {
-                    let length = data.length
-                    return res.status(200).json({ total: length, data: data });
-                })
-            } catch {
-                return res.status(404).json("NOT FOUND")
             }
+            var searchQuerySoonExpired = {};
+            var searchQueryExpired = {};
+            searchQuerySoonExpired["expiredDate"] = {
+                $gte: now,
+                $lt: expireThisMonth
+            }
+            searchQueryExpired["expiredDate"] = {
+                $lte: now,
+            }
+            let data;
+            if (countInfo === "1") {
+                let soonExpired = await aggregateCar(searchQueryPlace, searchQuerySoonExpired);
+                let expired = await aggregateCar(searchQueryPlace, searchQueryExpired);
+                if (soonExpired === null || expired === null) {
+                    return res.status(500).json("SERVER UNAVAILABLE");
+                }
+                data = {
+                    soon: soonExpired.length,
+                    expired: expired.length
+                }
+            } else {
+                if (status === "soon") {
+                    data = await aggregateCar(searchQueryPlace, searchQuerySoonExpired);
+                } else if (status === "expired") {
+                    data = await aggregateCar(searchQueryPlace, searchQueryExpired);
+                }
+            }
+            if (data === null) {
+                return res.status(500).json("SERVER UNAVAILABLE");
+            }
+            return res.status(200).json({ total: data.length, data: data });
         }
     }
+}
+
+async function aggregateCar(searchQueryPlace, searchQueryTime) {
+    let data = await CarsModel.aggregate([
+        {
+            $lookup: {
+                from: "Registry",
+                localField: "registry",
+                foreignField: "_id",
+                as: "registry"
+            }
+        },
+        {
+            $lookup: {
+                from: "CarOwners",
+                localField: "owner",
+                foreignField: "_id",
+                as: "owner"
+            }
+        },
+        {
+            $unwind: "$registry"
+        },
+        {
+            $match: searchQueryPlace
+        },
+        {
+            $sort: {
+                "registry.regisDate": -1,
+            },
+        },
+        {
+            $group: {
+                _id: "$_id",
+                registDate: { $first: "$registry.regisDate" },
+                numberPlate: { $first: "$numberPlate" },
+                expiredDate: { $first: "$registry.expiredDate" },
+                city: { $first: "$registry.city" },
+                owner: { $first: "$owner" }
+            },
+        },
+        {
+            $match: searchQueryTime
+        },
+        {
+            $project: {
+                _id: 0,
+                numberPlate: 1,
+                registDate: 1,
+                expiredDate: 1,
+                city: 1,
+                ownerName: "$owner.data.name",
+                ownerSSN: "$owner.data.SSN",
+                ownerPhone: "$owner.data.phone",
+                ownerEmail: "$owner.email"
+            }
+        },
+    ]).catch((err) => {
+        return null;
+    })
+    return data;
 }
 
 module.exports = OfficeController;
