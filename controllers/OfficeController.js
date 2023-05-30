@@ -56,14 +56,17 @@ class OfficeController {
         RegistryModel.find(searchQuery).sort({
             regisDate: -1
         }).limit(10)
-            .select("regisNum car regisDate expiredDate city").populate({
+            .select("regisNum car regisDate regisPlace expiredDate city").populate([{
                 path: "car",
                 populate: {
                     path: "owner",
                     select: "email data.name data.dateOfBirth data.SSN data.phone"
                 },
                 select: "numberPlate owner"
-            }).then((data) => {
+            }, {
+                path: "regisPlace",
+                select: "name"
+            }]).then((data) => {
                 return res.status(200).json(data);
             }).catch((err) => {
                 return res.status(500).json("SERVER UNAVAILABLE");
