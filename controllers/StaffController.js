@@ -1,5 +1,8 @@
 const StaffModel = require('../models/Staff');
 const OfficeModel = require('../models/RegistryOffice');
+const TokenModel = require('../models/Token');
+const sendEmail = require("../utils/email/sendEmail");
+const crypto = require("crypto");
 const bcrypt = require('bcrypt');
 const jwt = require('../utils/JWTHelpers');
 const ObjectId = require('mongoose').Types.ObjectId;
@@ -132,6 +135,69 @@ class StaffController {
         }).catch((err) => {
             return res.status(500).json("DUPLICATE DATA");
         });
+    }
+
+    static async forgotPassword(req, res) {
+        let email = req.body.email;
+        let user = await StaffModel.findOne({
+            email: email
+        }).catch((err) => {
+            return res.status(500).json("SERVER UNAVAILABLE");
+        });
+        if (!user) {
+            return res.status(404).json("NOT FOUND");
+        }
+        let token = await TokenModel.findOne({
+            userId: user['_id']
+        }).catch((err) => {
+            return res.status(500).json('SERVER UNAVAILABLE');
+        });
+        if (token) {
+            await TokenModel.deleteOne({ _id: token['_id'] }).catch((err) => {
+                return res.status(500).josn("SERVER UNAVAILABLE");
+            });
+        }
+        let resetToken = crypto.randomBytes(40).toString("hex");
+        const hash = await bcrypt.hash(resetToken, 10);
+        await new TokenModel({
+            userId: user['_id'],
+            name: user.data.name,
+            token: hash,
+            createdAt: Date.now()
+        }).save();
+        const resetLink = `https://registrytotal.herokuapp.com/reset-password/${resetToken}?userid=${user['_id']}`;
+        sendEmail(
+            user['email'],
+            "Password reset Request",
+            { name: user.data.name, link: resetLink },
+            "./requestResetPassword.handlebars"
+        );
+        return res.status(200).json(resetLink);
+    }
+
+    static async resetPassword(req, res) {
+        let token = req.params.token;
+        let newPass = String(req.body.newpassword);
+        let existToken = req.existToken;
+        await StaffModel.updateOne({
+            _id: existToken['userId']
+        }, {
+            password: newPass
+        }).catch((err) => {
+            return res.status(500).json("SERVER UNAVAILABLE");
+        });
+        sendEmail(
+            existToken['email'],
+            "Password reset Successfully",
+            { name: existToken['name'], },
+            "./resetPassword.handlebars"
+        );
+        await TokenModel.deleteOne({
+            token: existToken['token']
+        }).catch((err) => {
+            return res.status(500).json("SERVER UNAVAILABLE");
+        })
+        return res.status(200).json("Password reset Successfully");
     }
 }
 
