@@ -4,35 +4,23 @@ const handlebars = require("handlebars");
 const fs = require("fs");
 const path = require("path");
 
-const sendEmail = (email, subject, payload, template) => {
+const sendEmail = async (email, subject, payload, template) => {
     try {
-        const transporter = nodemailer.createTransport({
-            service: "gmail",
+        let transporter = nodemailer.createTransport({
+            service: 'Gmail',
             auth: {
                 user: process.env.EMAIL_USERNAME,
                 pass: process.env.EMAIL_PASSWORD,
             },
         });
 
-        const source = fs.readFileSync(path.join(__dirname, template), "utf8");
-        const compiledTemplate = handlebars.compile(source);
-        const options = () => {
-            return {
-                from: process.env.EMAIL_USERNAME,
-                to: email,
-                subject: subject,
-                html: compiledTemplate(payload),
-            };
-        };
-
-        transporter.sendMail(options(), (error, info) => {
-            if (error) {
-                return error;
-            } else {
-                return res.status(200).json({
-                    success: true,
-                });
-            }
+        let source = fs.readFileSync(path.join(__dirname, template), "utf8");
+        let compiledTemplate = handlebars.compile(source);
+        let info = await transporter.sendMail({
+            from: "Cục đăng kiểm Việt Nam " + process.env.EMAIL_USERNAME,
+            to: email,
+            subject: subject,
+            html: compiledTemplate(payload),
         });
     } catch (error) {
         return error;
