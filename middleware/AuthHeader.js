@@ -10,7 +10,7 @@ module.exports = (req, res, next) => {
             req.result = result;
             next();
         } catch (err) {
-            return res.status(500).json("UNAUTHORIZED");
+            return res.status(403).json("UNAUTHORIZED");
         }
     } else {
         return res.status(403).json("UNAUTHORIZED");

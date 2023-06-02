@@ -2,6 +2,7 @@ const OfficeModel = require('../models/RegistryOffice');
 const RegistryModel = require('../models/Registry');
 const CarsModel = require('../models/Cars');
 const ObjectId = require('mongoose').Types.ObjectId;
+const moment = require('moment-timezone');
 
 class OfficeController {
     static getAllOffice(req, res) {
@@ -78,22 +79,17 @@ class OfficeController {
         let id = req.params.id;
         let time = req.body.time;
         let city = req.body.city;
-        let workingCity = await OfficeModel.findOne({
-            _id: result['id']
-        }).select("city").catch((err) => {
-            return res.status(500).json("SERVER UNAVAILABLE");
-        });
         if (result === undefined || id === undefined || time === undefined
             || isNaN(time) || city === undefined || typeof (city) !== "string"
-            || (result['isAdmin'] !== 1 && city !== "" && city != workingCity['city'])) {
+            || (result['workFor'] !== id && result['isAdmin'] !== 1)) {
             return res.status(404).json("NOT FOUND");
         } else {
             try {
                 var searchQuery = {
                     regisPlace: new ObjectId(id),
                     regisDate: {
-                        $gte: new Date(Number(time), 0, 1),
-                        $lt: new Date(Number(time) + 1, 0, 1)
+                        $gte: new Date(`${time}/01/01`),
+                        $lt: new Date(`${Number(time) + 1}/01/01`)
                     }
                 };
                 if (id === result['workFor'] && result['isAdmin'] === 1) { // all office
@@ -102,37 +98,52 @@ class OfficeController {
                         searchQuery['city'] = city;
                     }
                 }
-                RegistryModel.aggregate([
-                    {
-                        $match: searchQuery
-                    },
-                    {
-                        $group: {
-                            _id: { month: { $month: "$regisDate" }, year: { $year: "$regisDate" } },
-                            count: { $sum: 1 }
-                        }
-                    },
-                    {
-                        $project: {
-                            _id: 0,
-                            month: "$_id.month",
-                            count: 1
-                        }
-                    }, {
-                        $sort: {
-                            _id: 1,
-                            month: 1
-                        }
-                    },
-                ]).then((data) => {
-                    let sum = 0;
-                    for (var i = 0; i < data.length; i++) {
-                        sum += data[i]['count']
-                    }
-                    return res.status(200).json({ year: time, total: sum, data: data });
-                })
+                let data = await countCarRegisted(searchQuery);
+                if (data) {
+                    return res.status(200).json({ total: data[1], data: data[0] })
+                } else {
+                    return res.status(500).json("SERVER UNAVAILABLE");
+                }
             } catch {
                 return res.status(404).json("NOT FOUND")
+            }
+        }
+    }
+
+    static async getNewCar(req, res) {
+        let result = req.result;
+        let id = req.params.id;   // the office id to retrieve data, if the id is registryVN then will retreive all data
+        let city = req.body.city; // only admin can use this
+        if (result === undefined || id === undefined || city === undefined
+            || typeof (city) !== "string" || (result['workFor'] !== id && result['isAdmin'] !== 1)) {
+            return res.status(404).json("NOT FOUND");
+        } else {
+            try {
+                let workingCity = await OfficeModel.findOne({
+                    _id: result['workFor']
+                }).select("city").catch((err) => {
+                    return res.status(500).json("SERVER UNAVAILABLE");
+                });
+                var searchQuery = {
+                    boughtPlace: workingCity['city'],
+                    registry: {
+                        $size: 0
+                    }
+                };
+                if (id === result['workFor'] && result['isAdmin'] === 1) { // all office (for admin)
+                    if (city === "") {
+                        delete searchQuery['boughtPlace'];
+                    } else {
+                        searchQuery['boughtPlace'] = city;
+                    }
+                }
+                CarsModel.countDocuments(searchQuery).then((data) => {
+                    return res.status(200).json({ total: data })
+                }).catch((err) => {
+                    return res.status(500).json("SERVER UNAVAILABLE");
+                })
+            } catch (err) {
+                return res.status(500).json("SERVER UNAVAILABLE");
             }
         }
     }
@@ -143,15 +154,10 @@ class OfficeController {
         let status = req.body.status
         let city = req.body.city;
         let countInfo = req.body.info;
-        let workingCity = await OfficeModel.findOne({
-            _id: result['id']
-        }).select("city").catch((err) => {
-            return res.status(500).json("SERVER UNAVAILABLE");
-        });
         if (result === undefined || id === undefined || status === undefined || countInfo === undefined
             || (status !== "soon" && status !== "expired")
             || city === undefined || typeof (city) !== "string"
-            || (result['isAdmin'] !== 1 && city !== "" && city != workingCity['city'])
+            || (result['workFor'] !== id && result['isAdmin'] !== 1)
             || (String(countInfo) !== "1" && String(countInfo) !== "0")) {
             return res.status(404).json("NOT FOUND");
         } else {
@@ -178,8 +184,8 @@ class OfficeController {
             }
             let data;
             if (countInfo === "1") {
-                let soonExpired = await aggregateCar(searchQueryPlace, searchQuerySoonExpired);
-                let expired = await aggregateCar(searchQueryPlace, searchQueryExpired);
+                let soonExpired = await carOutDate(searchQueryPlace, searchQuerySoonExpired);
+                let expired = await carOutDate(searchQueryPlace, searchQueryExpired);
                 if (soonExpired === null || expired === null) {
                     return res.status(500).json("SERVER UNAVAILABLE");
                 }
@@ -189,9 +195,9 @@ class OfficeController {
                 }
             } else {
                 if (status === "soon") {
-                    data = await aggregateCar(searchQueryPlace, searchQuerySoonExpired);
+                    data = await carOutDate(searchQueryPlace, searchQuerySoonExpired);
                 } else if (status === "expired") {
-                    data = await aggregateCar(searchQueryPlace, searchQueryExpired);
+                    data = await carOutDate(searchQueryPlace, searchQueryExpired);
                 }
             }
             if (data === null) {
@@ -202,7 +208,79 @@ class OfficeController {
     }
 }
 
-async function aggregateCar(searchQueryPlace, searchQueryTime) {
+async function countCarRegisted(searchQuery) {
+    let data = await RegistryModel.aggregate([
+        {
+            $match: searchQuery
+        },
+        {
+            $project: {
+                year: {
+                    $year: {
+                        date: {
+                            $add: ['$regisDate', 7 * 60 * 60 * 1000]
+                        },
+                        timezone: 'Asia/Bangkok'
+                    }
+                },
+                month: {
+                    $month: {
+                        date: {
+                            $add: ['$regisDate', 7 * 60 * 60 * 1000]
+                        },
+                        timezone: 'Asia/Bangkok'
+                    }
+                },
+            }
+        },
+        {
+            $group: {
+                _id: { month: "$month", year: "$year" },
+                count: { $sum: 1 }
+            }
+        },
+        {
+            $sort: {
+                _id: 1,
+                month: 1
+            }
+        },
+        {
+            $project: {
+                _id: 0,
+                month: {
+                    $switch: {
+                        branches: [
+                            { case: { $eq: [1, "$_id.month"] }, then: "Jan" },
+                            { case: { $eq: [2, "$_id.month"] }, then: "Feb" },
+                            { case: { $eq: [3, "$_id.month"] }, then: "Mar" },
+                            { case: { $eq: [4, "$_id.month"] }, then: "Apr" },
+                            { case: { $eq: [5, "$_id.month"] }, then: "May" },
+                            { case: { $eq: [6, "$_id.month"] }, then: "June" },
+                            { case: { $eq: [7, "$_id.month"] }, then: "July" },
+                            { case: { $eq: [8, "$_id.month"] }, then: "Aug" },
+                            { case: { $eq: [9, "$_id.month"] }, then: "Sept" },
+                            { case: { $eq: [10, "$_id.month"] }, then: "Oct" },
+                            { case: { $eq: [11, "$_id.month"] }, then: "Nov" },
+                            { case: { $eq: [12, "$_id.month"] }, then: "Dec" },
+                        ],
+                        default: null
+                    }
+                },
+                count: 1
+            }
+        },
+    ]).catch((err) => {
+        return null;
+    });
+    let sum = 0;
+    for (var i = 0; i < data.length; i++) {
+        sum += data[i]['count']
+    }
+    return [data, sum];
+}
+
+async function carOutDate(searchQueryPlace, searchQueryTime) {
     let data = await CarsModel.aggregate([
         {
             $lookup: {

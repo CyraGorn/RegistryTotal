@@ -1,8 +1,5 @@
 const mongoose = require("mongoose");
 
-const car = require("./Cars");
-const Staff = require("./Staff");
-
 const registrySchema = new mongoose.Schema({
     regisNum: {
         type: String,
