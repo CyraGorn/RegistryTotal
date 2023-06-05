@@ -10,7 +10,7 @@ router.post('/add', AuthHeader, AuthAdmin, AuthAddOffice, OfficeController.addOf
 router.get('/recentregis', AuthHeader, OfficeController.getRecentRegistry);
 router.get('/:id', AuthHeader, AuthOffice, OfficeController.getById);
 router.post('/:id/newcar', AuthHeader, OfficeController.getNewCar);
-router.post('/:id/car', AuthHeader, AuthOffice, OfficeController.getCarRegisted);
-router.post('/:id/outdatecar', AuthHeader, AuthOffice, OfficeController.getCarOutDate);
+router.post('/:id/car', AuthHeader, OfficeController.getCarRegisted);
+router.post('/:id/outdatecar', AuthHeader, OfficeController.getCarOutDate);
 
 module.exports = router;

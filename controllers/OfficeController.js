@@ -81,10 +81,13 @@ class OfficeController {
         let city = req.body.city;
         if (result === undefined || id === undefined || time === undefined
             || isNaN(time) || city === undefined || typeof (city) !== "string"
-            || (result['workFor'] !== id && result['isAdmin'] !== 1)) {
+            || (result['isAdmin'] !== 1 && id !== "own")) {
             return res.status(404).json("NOT FOUND");
         } else {
             try {
+                if (result['isAdmin'] !== 1) {
+                    id = result['workFor'];
+                }
                 var searchQuery = {
                     regisPlace: new ObjectId(id),
                     regisDate: {
@@ -115,7 +118,7 @@ class OfficeController {
         let id = req.params.id;   // the office id to retrieve data, if the id is registryVN then will retreive all data
         let city = req.body.city; // only admin can use this
         if (result === undefined || id === undefined || city === undefined
-            || typeof (city) !== "string" || (result['workFor'] !== id && result['isAdmin'] !== 1)) {
+            || typeof (city) !== "string" || (result['isAdmin'] !== 1 && id !== "own")) {
             return res.status(404).json("NOT FOUND");
         } else {
             try {
@@ -153,14 +156,17 @@ class OfficeController {
         let id = req.params.id;
         let status = req.body.status
         let city = req.body.city;
-        let countInfo = req.body.info;
-        if (result === undefined || id === undefined || status === undefined || countInfo === undefined
+        let info = req.body.info;
+        if (result === undefined || id === undefined || status === undefined || info === undefined
             || (status !== "soon" && status !== "expired")
             || city === undefined || typeof (city) !== "string"
-            || (result['workFor'] !== id && result['isAdmin'] !== 1)
-            || (String(countInfo) !== "1" && String(countInfo) !== "0")) {
+            || (result['isAdmin'] !== 1 && id !== "own")
+            || (String(info) !== "1" && String(info) !== "0")) {
             return res.status(404).json("NOT FOUND");
         } else {
+            if (result['isAdmin'] !== 1) {
+                id = result['workFor'];
+            }
             var now = new Date();
             var expireThisMonth = new Date();
             expireThisMonth.setMonth(now.getMonth() + 1);
@@ -183,7 +189,7 @@ class OfficeController {
                 $lte: now,
             }
             let data;
-            if (countInfo === "1") {
+            if (info === "0") {
                 let soonExpired = await carOutDate(searchQueryPlace, searchQuerySoonExpired);
                 let expired = await carOutDate(searchQueryPlace, searchQueryExpired);
                 if (soonExpired === null || expired === null) {
