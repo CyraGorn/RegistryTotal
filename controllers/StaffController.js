@@ -182,7 +182,7 @@ class StaffController {
             { name: user.data.name, link: resetLink },
             "./requestResetPassword.handlebars"
         );
-        return res.status(200).json(resetLink);
+        return res.status(200).json("Password reset request has been sent to your email!");
     }
 
     static async resetPassword(req, res) {
