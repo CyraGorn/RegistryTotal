@@ -175,7 +175,7 @@ class StaffController {
             token: hash,
             createdAt: Date.now()
         }).save();
-        const resetLink = `https://registrytotal.herokuapp.com/reset-password/${resetToken}?userid=${user['_id']}`;
+        const resetLink = `registrytotal.herokuapp.com/reset-password/${resetToken}?userid=${user['_id']}`;
         sendEmail(
             user['email'],
             "Password reset Request",
