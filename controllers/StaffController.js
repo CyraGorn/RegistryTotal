@@ -38,7 +38,17 @@ class StaffController {
     static getById(req, res) {
         StaffModel.findOne({
             _id: new ObjectId(req.params.id)
-        }).populate("workFor").then((data) => {
+        }).select("_id data email isAdmin workFor registed").populate({
+            path: "workFor",
+            select: "_id name address city"
+        }).populate({
+            path: "registed",
+            populate: {
+                path: "car",
+                select: "numberPlate"
+            },
+            select: "regisNum regisDate car"
+        }).then((data) => {
             return res.status(200).json(data);
         }).catch((err) => {
             return res.status(404).json("NOT FOUND");
