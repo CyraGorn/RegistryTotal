@@ -85,18 +85,20 @@ class OfficeController {
             return res.status(404).json("NOT FOUND");
         } else {
             try {
-                if (result['isAdmin'] !== 1) {
-                    id = result['workFor'];
-                }
+                let newID = result['workFor'];
                 var searchQuery = {
-                    regisPlace: new ObjectId(id),
+                    regisPlace: new ObjectId(newID),
                     regisDate: {
                         $gte: new Date(`${time}/01/01`),
                         $lt: new Date(`${Number(time) + 1}/01/01`)
                     }
                 };
-                if (id === result['workFor'] && result['isAdmin'] === 1) { // all office
-                    delete searchQuery['regisPlace'];
+                if (result['isAdmin'] === 1) { // all office
+                    if (id === result['workFor'] || id === "own") {
+                        delete searchQuery['regisPlace'];
+                    } else {
+                        searchQuery['regisPlace'] = new ObjectId(id);
+                    }
                     if (city !== "") {
                         searchQuery['city'] = city;
                     }
@@ -107,7 +109,8 @@ class OfficeController {
                 } else {
                     return res.status(500).json("SERVER UNAVAILABLE");
                 }
-            } catch {
+            } catch (err) {
+                console.log(err)
                 return res.status(404).json("NOT FOUND")
             }
         }
@@ -133,7 +136,7 @@ class OfficeController {
                         $size: 0
                     }
                 };
-                if (id === result['workFor'] && result['isAdmin'] === 1) { // all office (for admin)
+                if (result['isAdmin'] === 1 && (id === result['workFor'] || id === "own")) { // all office (for admin)
                     if (city === "") {
                         delete searchQuery['boughtPlace'];
                     } else {
@@ -164,52 +167,58 @@ class OfficeController {
             || (String(info) !== "1" && String(info) !== "0")) {
             return res.status(404).json("NOT FOUND");
         } else {
-            if (result['isAdmin'] !== 1) {
-                id = result['workFor'];
-            }
-            var now = new Date();
-            var expireThisMonth = new Date();
-            expireThisMonth.setMonth(now.getMonth() + 1);
-            var searchQueryPlace = {
-                "registry.regisPlace": new ObjectId(id),
-            };
-            if (id === result['workFor'] && result['isAdmin'] === 1) { // all office
-                delete searchQueryPlace['registry.regisPlace'];
-                if (city !== "") {
-                    searchQueryPlace["registry.city"] = city;
+            try {
+                let newID = result['workFor'];
+                var now = new Date();
+                var expireThisMonth = new Date();
+                expireThisMonth.setMonth(now.getMonth() + 1);
+                var searchQueryPlace = {
+                    "registry.regisPlace": new ObjectId(newID),
+                };
+                if (result['isAdmin'] === 1) { // all office
+                    if (id === result['workFor'] || id === "own") {
+                        delete searchQueryPlace['registry.regisPlace'];
+                    } else {
+                        searchQueryPlace['registry.regisPlace'] = new ObjectId(id);
+                    }
+                    if (city !== "") {
+                        searchQueryPlace["registry.city"] = city;
+                    }
                 }
-            }
-            var searchQuerySoonExpired = {};
-            var searchQueryExpired = {};
-            searchQuerySoonExpired["expiredDate"] = {
-                $gte: now,
-                $lt: expireThisMonth
-            }
-            searchQueryExpired["expiredDate"] = {
-                $lte: now,
-            }
-            let data;
-            if (info === "0") {
-                let soonExpired = await carOutDate(searchQueryPlace, searchQuerySoonExpired);
-                let expired = await carOutDate(searchQueryPlace, searchQueryExpired);
-                if (soonExpired === null || expired === null) {
+                var searchQuerySoonExpired = {};
+                var searchQueryExpired = {};
+                searchQuerySoonExpired["expiredDate"] = {
+                    $gte: now,
+                    $lt: expireThisMonth
+                }
+                searchQueryExpired["expiredDate"] = {
+                    $lte: now,
+                }
+                let data;
+                if (info === "0") {
+                    let soonExpired = await carOutDate(searchQueryPlace, searchQuerySoonExpired);
+                    let expired = await carOutDate(searchQueryPlace, searchQueryExpired);
+                    if (soonExpired === null || expired === null) {
+                        return res.status(500).json("SERVER UNAVAILABLE");
+                    }
+                    data = {
+                        soon: soonExpired.length,
+                        expired: expired.length
+                    }
+                } else {
+                    if (status === "soon") {
+                        data = await carOutDate(searchQueryPlace, searchQuerySoonExpired);
+                    } else if (status === "expired") {
+                        data = await carOutDate(searchQueryPlace, searchQueryExpired);
+                    }
+                }
+                if (data === null) {
                     return res.status(500).json("SERVER UNAVAILABLE");
                 }
-                data = {
-                    soon: soonExpired.length,
-                    expired: expired.length
-                }
-            } else {
-                if (status === "soon") {
-                    data = await carOutDate(searchQueryPlace, searchQuerySoonExpired);
-                } else if (status === "expired") {
-                    data = await carOutDate(searchQueryPlace, searchQueryExpired);
-                }
+                return res.status(200).json({ total: data.length, data: data });
+            } catch {
+                return res.status(404).json("NOT FOUND")
             }
-            if (data === null) {
-                return res.status(500).json("SERVER UNAVAILABLE");
-            }
-            return res.status(200).json({ total: data.length, data: data });
         }
     }
 }
