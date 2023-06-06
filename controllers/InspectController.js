@@ -8,7 +8,19 @@ class InspectController {
     static getById(req, res) {
         RegistryModel.findOne({
             regisNum: req.params.id
-        }).select("regisStaff regisPlace regisNum car regisDate expiredDate").populate("car").then((data) => {
+        }).select("regisStaff regisPlace regisNum car regisDate expiredDate").populate([{
+            path: "car",
+            populate: {
+                path: "owner"
+            },
+            select: "numberPlate"
+        }, {
+            path: "regisStaff",
+            select: "data email"
+        }, {
+            path: "regisPlace",
+            select: "name city address"
+        }]).then((data) => {
             return res.status(200).json(data);
         }).catch((err) => {
             return res.status(500).json("SERVER UNAVAILABLE");
