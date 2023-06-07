@@ -13,7 +13,6 @@ class InspectController {
             populate: {
                 path: "owner"
             },
-            select: "numberPlate"
         }, {
             path: "regisStaff",
             select: "data email"
