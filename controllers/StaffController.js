@@ -147,6 +147,20 @@ class StaffController {
         });
     }
 
+    static async changePassword(req, res) {
+        let newPass = req.body.newpass;
+        let result = req.result;
+        let user = await StaffModel.findOne({ _id: result['id'] }).catch((err) => {
+            return res.status(500).json("SERVER UNAVAILABLE");
+        });
+        user['password'] = newPass;
+        user.save().then((data) => {
+            return res.status(200).json("Password reset Successfully");
+        }).catch((err) => {
+            return res.status(500).json("SERVER UNAVAILABLE");
+        });
+    }
+
     static async forgotPassword(req, res) {
         let email = req.body.email;
         let user = await StaffModel.findOne({
@@ -189,17 +203,17 @@ class StaffController {
         let token = req.params.token;
         let newPass = String(req.body.newpassword);
         let existToken = req.existToken;
-        await StaffModel.updateOne({
-            _id: existToken['userId']
-        }, {
-            password: newPass
-        }).catch((err) => {
+        let user = await StaffModel.findOne({ _id: existToken['userId'] }).catch((err) => {
+            return res.status(500).json("SERVER UNAVAILABLE");
+        });
+        user['password'] = newPass;
+        await user.save().catch((err) => {
             return res.status(500).json("SERVER UNAVAILABLE");
         });
         sendEmail(
-            existToken['email'],
+            user['email'],
             "Password reset Successfully",
-            { name: existToken['name'], },
+            { name: user.data.name, },
             "./resetPassword.handlebars"
         );
         await TokenModel.deleteOne({
