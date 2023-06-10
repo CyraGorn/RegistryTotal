@@ -279,18 +279,18 @@ async function countCarRegisted(searchQuery) {
                 month: {
                     $switch: {
                         branches: [
-                            { case: { $eq: [1, "month"] }, then: "Jan" },
-                            { case: { $eq: [2, "month"] }, then: "Feb" },
-                            { case: { $eq: [3, "$_id.month"] }, then: "Mar" },
-                            { case: { $eq: [4, "$_id.month"] }, then: "Apr" },
-                            { case: { $eq: [5, "$_id.month"] }, then: "May" },
-                            { case: { $eq: [6, "$_id.month"] }, then: "June" },
-                            { case: { $eq: [7, "$_id.month"] }, then: "July" },
-                            { case: { $eq: [8, "$_id.month"] }, then: "Aug" },
-                            { case: { $eq: [9, "$_id.month"] }, then: "Sept" },
-                            { case: { $eq: [10, "$_id.month"] }, then: "Oct" },
-                            { case: { $eq: [11, "$_id.month"] }, then: "Nov" },
-                            { case: { $eq: [12, "month"] }, then: "Dec" },
+                            { case: { $eq: [1, "$month"] }, then: "Jan" },
+                            { case: { $eq: [2, "$month"] }, then: "Feb" },
+                            { case: { $eq: [3, "$month"] }, then: "Mar" },
+                            { case: { $eq: [4, "$month"] }, then: "Apr" },
+                            { case: { $eq: [5, "$month"] }, then: "May" },
+                            { case: { $eq: [6, "$month"] }, then: "June" },
+                            { case: { $eq: [7, "$month"] }, then: "July" },
+                            { case: { $eq: [8, "$month"] }, then: "Aug" },
+                            { case: { $eq: [9, "$month"] }, then: "Sept" },
+                            { case: { $eq: [10, "$month"] }, then: "Oct" },
+                            { case: { $eq: [11, "$month"] }, then: "Nov" },
+                            { case: { $eq: [12, "$month"] }, then: "Dec" },
                         ],
                         default: null
                     }
