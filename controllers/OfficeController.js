@@ -228,45 +228,45 @@ async function countCarRegisted(searchQuery) {
         {
             $match: searchQuery
         },
-        // {
-        //     $group: {
-        //         _id: { month: { $month: "$regisDate" }, year: { $year: "$regisDate" } },
-        //         count: { $sum: 1 }
-        //     }
-        // },
-        // {
-        //     $project: {
-        //         _id: 0,
-        //         month: "$_id.month",
-        //         count: 1
-        //     }
-        // },
-        {
-            $project: {
-                year: {
-                    $year: {
-                        date: {
-                            $add: ['$regisDate', 7 * 60 * 60 * 1000 - 15 * 60 * 1000]
-                        },
-                        // timezone: 'Asia/Bangkok'
-                    }
-                },
-                month: {
-                    $month: {
-                        date: {
-                            $add: ['$regisDate', 7 * 60 * 60 * 1000 - 15 * 60 * 1000]
-                        },
-                        // timezone: 'Asia/Bangkok'
-                    }
-                },
-            }
-        },
         {
             $group: {
-                _id: { month: "$month", year: "$year" },
+                _id: { month: { $month: "$regisDate" }, year: { $year: "$regisDate" } },
                 count: { $sum: 1 }
             }
         },
+        {
+            $project: {
+                _id: 0,
+                month: "$_id.month",
+                count: 1
+            }
+        },
+        // {
+        //     $project: {
+        //         year: {
+        //             $year: {
+        //                 date: {
+        //                     $add: ['$regisDate', 7 * 60 * 60 * 1000 - 15 * 60 * 1000]
+        //                 },
+        //                 // timezone: 'Asia/Bangkok'
+        //             }
+        //         },
+        //         month: {
+        //             $month: {
+        //                 date: {
+        //                     $add: ['$regisDate', 7 * 60 * 60 * 1000 - 15 * 60 * 1000]
+        //                 },
+        //                 // timezone: 'Asia/Bangkok'
+        //             }
+        //         },
+        //     }
+        // },
+        // {
+        //     $group: {
+        //         _id: { month: "$month", year: "$year" },
+        //         count: { $sum: 1 }
+        //     }
+        // },
         {
             $sort: {
                 _id: 1,
@@ -279,8 +279,8 @@ async function countCarRegisted(searchQuery) {
                 month: {
                     $switch: {
                         branches: [
-                            { case: { $eq: [1, "$_id.month"] }, then: "Jan" },
-                            { case: { $eq: [2, "$_id.month"] }, then: "Feb" },
+                            { case: { $eq: [1, "month"] }, then: "Jan" },
+                            { case: { $eq: [2, "month"] }, then: "Feb" },
                             { case: { $eq: [3, "$_id.month"] }, then: "Mar" },
                             { case: { $eq: [4, "$_id.month"] }, then: "Apr" },
                             { case: { $eq: [5, "$_id.month"] }, then: "May" },
@@ -290,7 +290,7 @@ async function countCarRegisted(searchQuery) {
                             { case: { $eq: [9, "$_id.month"] }, then: "Sept" },
                             { case: { $eq: [10, "$_id.month"] }, then: "Oct" },
                             { case: { $eq: [11, "$_id.month"] }, then: "Nov" },
-                            { case: { $eq: [12, "$_id.month"] }, then: "Dec" },
+                            { case: { $eq: [12, "month"] }, then: "Dec" },
                         ],
                         default: null
                     }
