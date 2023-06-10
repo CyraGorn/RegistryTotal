@@ -233,17 +233,17 @@ async function countCarRegisted(searchQuery) {
                 year: {
                     $year: {
                         date: {
-                            $add: ['$regisDate', 0 * 60 * 60 * 1000]
+                            $add: ['$regisDate', 7 * 60 * 60 * 1000]
                         },
-                        timezone: 'Asia/Bangkok'
+                        // timezone: 'Asia/Bangkok'
                     }
                 },
                 month: {
                     $month: {
                         date: {
-                            $add: ['$regisDate', 0 * 60 * 60 * 1000]
+                            $add: ['$regisDate', 7 * 60 * 60 * 1000]
                         },
-                        timezone: 'Asia/Bangkok'
+                        // timezone: 'Asia/Bangkok'
                     }
                 },
             }
