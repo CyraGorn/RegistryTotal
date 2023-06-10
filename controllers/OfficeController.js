@@ -228,45 +228,45 @@ async function countCarRegisted(searchQuery) {
         {
             $match: searchQuery
         },
-        {
-            $group: {
-                _id: { month: { $month: "$regisDate" }, year: { $year: "$regisDate" } },
-                count: { $sum: 1 }
-            }
-        },
-        {
-            $project: {
-                _id: 0,
-                month: "$_id.month",
-                count: 1
-            }
-        },
-        // {
-        //     $project: {
-        //         year: {
-        //             $year: {
-        //                 date: {
-        //                     $add: ['$regisDate', 7 * 60 * 60 * 1000]
-        //                 },
-        //                 // timezone: 'Asia/Bangkok'
-        //             }
-        //         },
-        //         month: {
-        //             $month: {
-        //                 date: {
-        //                     $add: ['$regisDate', 7 * 60 * 60 * 1000]
-        //                 },
-        //                 // timezone: 'Asia/Bangkok'
-        //             }
-        //         },
-        //     }
-        // },
         // {
         //     $group: {
-        //         _id: { month: "$month", year: "$year" },
+        //         _id: { month: { $month: "$regisDate" }, year: { $year: "$regisDate" } },
         //         count: { $sum: 1 }
         //     }
         // },
+        // {
+        //     $project: {
+        //         _id: 0,
+        //         month: "$_id.month",
+        //         count: 1
+        //     }
+        // },
+        {
+            $project: {
+                year: {
+                    $year: {
+                        date: {
+                            $add: ['$regisDate', 7 * 60 * 60 * 1000 - 15 * 60 * 1000]
+                        },
+                        // timezone: 'Asia/Bangkok'
+                    }
+                },
+                month: {
+                    $month: {
+                        date: {
+                            $add: ['$regisDate', 7 * 60 * 60 * 1000 - 15 * 60 * 1000]
+                        },
+                        // timezone: 'Asia/Bangkok'
+                    }
+                },
+            }
+        },
+        {
+            $group: {
+                _id: { month: "$month", year: "$year" },
+                count: { $sum: 1 }
+            }
+        },
         {
             $sort: {
                 _id: 1,
