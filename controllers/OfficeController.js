@@ -74,6 +74,17 @@ class OfficeController {
             })
     }
 
+    static getOfficeByProvince(req, res) {
+        let province = req.body.province;
+        OfficeModel.find({
+            city: province
+        }).select("name address hotline hotMail").sort('name').then((data) => {
+            return res.status(200).json(data);
+        }).catch((err) => {
+            return res.status(500).json("SERVER UNAVAILABLE");
+        });
+    }
+
     static async getCarRegisted(req, res) {
         let result = req.result;
         let id = req.params.id;
