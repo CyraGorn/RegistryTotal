@@ -4,10 +4,11 @@ const AuthAddStaff = require('../../middleware/AuthAddStaff');
 const AuthChangeStaff = require('../../middleware/AuthChangeStaff');
 const AuthResetPassword = require('../../middleware/AuthResetPassword');
 const AuthChangePass = require('../../middleware/AuthChangePass');
+const LoginRateLimit = require('../../middleware/LoginRateLimit');
 const StaffController = require('../../controllers/StaffController');
 const router = require('express').Router();
 
-router.post('/login', StaffController.login);
+router.post('/login', LoginRateLimit, StaffController.login);
 router.get('/all', AuthHeader, AuthAdmin, StaffController.getAllStaff);
 router.get('/own', AuthHeader, StaffController.getOwnInfo);
 router.put('/change', AuthHeader, AuthChangeStaff, StaffController.changeInfo);

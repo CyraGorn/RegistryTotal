@@ -29,7 +29,7 @@ class validation {
     }
 
     static checkValidDimension(str) {
-        let re = /^\d{3,4}[xX]\d{3,4}[xX]\d{3,4}$/
+        let re = /^\d{3,4}\s[xX]\s\d{3,4}\s[xX]\s\d{3,4}$/
         return re.test(str);
     }
 

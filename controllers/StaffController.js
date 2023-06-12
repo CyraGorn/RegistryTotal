@@ -14,7 +14,7 @@ class StaffController {
         try {
             const user = await StaffModel.findOne({
                 email: email
-            });
+            }).catch((err) => { return res.status(500).json("SERVER UNAVAILABLE"); });
             const isMatch = await bcrypt.compare(password, user.password);
             if (!user || !isMatch) {
                 res.status(422).json({ error: 'Invalid email or password' });

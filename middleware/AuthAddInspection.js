@@ -76,10 +76,10 @@ function validateSpecification(req, res) {
         return "Wheel tread must be a positive integer";
     }
     if (!Validation.checkValidDimension(req.body.OverallDimension)) {
-        return "Overall dimension is invalid. For example: 1234x1234x1234";
+        return "Overall dimension is invalid. For example: 1234 x 1234 x 1234";
     }
     if (!Validation.checkValidDimension(req.body.LuggageContainer)) {
-        return "Luggage container is invalid. For example: 1234x1234x1234";
+        return "Luggage container is invalid. For example: 1234 x 1234 x 1234";
     }
     if (!Validation.checkNumber(req.body.WheelBase)) {
         return "Wheel base must be a positive integer";
