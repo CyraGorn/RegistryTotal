@@ -13,7 +13,7 @@ module.exports = async (req, res, next) => {
     req.body.hotmail = String(req.body.hotmail).trim();
     if (!Validation.checkAlphabetNumericString(req.body.name, 60)
         && !Validation.checkValidName(req.body.name, 60)[0]) {
-        return res.status(422).json("Name must have at least two words with length smaller than 60 and mustn't contain digits or special characters");
+        return res.status(422).json("Name must have at least two words with length smaller than 60 and mustn't contain special characters");
     }
     if (!Validation.checkValidProvince(req.body.city)) {
         return res.status(422).json("City is invalid");
