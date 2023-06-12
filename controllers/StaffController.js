@@ -102,30 +102,29 @@ class StaffController {
     }
 
     static async addStaff(req, res) {
-        var staff = await StaffModel.create({
-            data: {
-                name: req.body.name,
-                dateOfBirth: req.body.dob,
-                SSN: req.body.ssn,
-                phone: req.body.phone
-            },
-            isAdmin: Number(req.body.isAdmin),
-            email: req.body.email,
-            password: req.body.password,
-            workFor: req.officeid,
-        }).catch((err) => {
-            console.log(err);
+        try {
+            let staff = await StaffModel.create({
+                data: {
+                    name: req.body.name,
+                    dateOfBirth: req.body.dob,
+                    SSN: req.body.ssn,
+                    phone: req.body.phone
+                },
+                isAdmin: Number(req.body.isAdmin),
+                email: req.body.email,
+                password: req.body.password,
+                workFor: req.officeid,
+            });
+            OfficeModel.findByIdAndUpdate(req.officeid, {
+                $push: {
+                    staff: staff['_id']
+                }
+            }).then(() => {
+                return res.status(200).json("SUCCEEDED");
+            });
+        } catch (err) {
             return res.status(500).json("User already existed");
-        });
-        OfficeModel.findByIdAndUpdate(req.officeid, {
-            $push: {
-                staff: staff['_id']
-            }
-        }).then(() => {
-            return res.status(200).json("SUCCEEDED");
-        }).catch((err) => {
-            return res.status(500).json("SERVER UNAVAILABLE");
-        });
+        }
     }
 
     static changeInfo(req, res) {
