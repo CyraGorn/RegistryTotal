@@ -30,6 +30,9 @@ class InspectController {
     }
 
     static getCarByPlate(req, res) { // lấy thông tin xe, chủ xe thông qua biển xe
+        if (!req.body.plate || typeof (req.body.plate) !== "string") {
+            return res.status(404).json("NOT FOUND");
+        }
         let plate = req.body.plate;
         CarsModel.findOne({
             numberPlate: plate

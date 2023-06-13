@@ -75,6 +75,9 @@ class OfficeController {
     }
 
     static getOfficeByProvince(req, res) {
+        if (!req.body.province || typeof (req.body.province) !== 'string') {
+            return res.status(404).json("NOT FOUND");
+        }
         let province = req.body.province;
         OfficeModel.find({
             city: province
@@ -91,7 +94,7 @@ class OfficeController {
         let time = req.body.time;
         let city = req.body.city;
         if (result === undefined || id === undefined || time === undefined
-            || isNaN(time) || city === undefined || typeof (city) !== "string"
+            || typeof (time) !== "string" || city === undefined || typeof (city) !== "string"
             || (result['isAdmin'] !== 1 && id !== "own")) {
             return res.status(404).json("NOT FOUND");
         } else {
@@ -172,7 +175,7 @@ class OfficeController {
         let city = req.body.city;
         let info = req.body.info;
         if (result === undefined || id === undefined || status === undefined || info === undefined
-            || (status !== "soon" && status !== "expired")
+            || (status !== "soon" && status !== "expired") || typeof (info) !== "string"
             || city === undefined || typeof (city) !== "string"
             || (result['isAdmin'] !== 1 && id !== "own")
             || (String(info) !== "1" && String(info) !== "0")) {

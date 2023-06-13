@@ -3,41 +3,41 @@ const CarsModel = require('../models/Cars');
 const Validation = require('../utils/Validation');
 
 function validateOwnerData(req, res) {
-    if (!Validation.checkValidName(req.body.ownername, 20)[0]) {
+    if (!Validation.checkValidName(String(req.body.ownername), 20)[0]) {
         return "Name must have at least two words with length smaller than 20 and mustn't contain digits or special characters";
     }
-    if (!Validation.checkValidEmail(req.body.owneremail)) {
+    if (!Validation.checkValidEmail(String(req.body.owneremail))) {
         return "Email is invalid";
     }
-    if (!Validation.checkValidDOB(req.body.ownerdob)) {
+    if (!Validation.checkValidDOB(String(req.body.ownerdob))) {
         return "Date of birth is invalid. Age must be between 18 and 60";
     }
-    if (!Validation.checkValidPhone(req.body.ownerphone)) {
+    if (!Validation.checkValidPhone(String(req.body.ownerphone))) {
         return "Phone number must have 10 numbers and start with 0";
     }
-    if (!Validation.checkValidSSN(req.body.ownerssn)) {
+    if (!Validation.checkValidSSN(String(req.body.ownerssn))) {
         return "Social security number is invalid, SSN must have 12 numbers";
     }
     return true;
 }
 
 async function validateCarData(req, res) {
-    if (!Validation.checkValidPlate(req.body.carNumberPlate)) {
+    if (!Validation.checkValidPlate(String(req.body.carNumberPlate))) {
         return "Plate number is invalid";
     }
-    if (!Validation.checkValidName(req.body.Type, 20)[0]) {
-        return "Car type mustn't contain digit or special characters or whitespace and length must be less than 20 characters";
+    if (!Validation.checkValidName(String(req.body.Type), 20)[0]) {
+        return "Car type mustn't contain digit or special characters and length must be less than 20 characters";
     }
-    if (!Validation.checkAlphabetString(req.body.Mark, 20)) {
+    if (!Validation.checkAlphabetString(String(req.body.Mark), 20)) {
         return "Car brand mustn't contain digit or special characters or whitespace and length must be less than 20 characters";
     }
-    if (!Validation.checkAlphabetNumericString(req.body.ModelCode, 20)) {
+    if (!Validation.checkAlphabetNumericString(String(req.body.ModelCode), 20)) {
         return "Model code mustn't contain special characters or whitespace and length must be less than 20 characters";
     }
-    if (!Validation.checkAlphabetNumericString(req.body.EngineNumber, 20)) {
+    if (!Validation.checkAlphabetNumericString(String(req.body.EngineNumber), 20)) {
         return "Engine number mustn't contain special characters or whitespace and length must be less than 20 characters";
     }
-    if (!Validation.checkAlphabetNumericString(req.body.ChassisNumber, 20)) {
+    if (!Validation.checkAlphabetNumericString(String(req.body.ChassisNumber), 20)) {
         return "Chassis number mustn't contain special characters or whitespace and length must be less than 20 characters";
     }
     if (req.body.purpose != "Cá nhân" && req.body.purpose != "Kinh doanh" && req.body.purpose != "Cơ quan") {
@@ -45,23 +45,23 @@ async function validateCarData(req, res) {
     }
     let now = new Date();
     now = now.getFullYear();
-    if (!Validation.checkNumber(req.body.ManufacturedYear)
+    if (!Validation.checkNumber(String(req.body.ManufacturedYear))
         || Number(req.body.ManufacturedYear) > now || Number(req.body.ManufacturedYear) < now - 60) {
         return "Manufacture year mustn't greater than now or less than 60 years before";
     }
-    if (!Validation.checkValidCountry(req.body.ManufacturedCountry)) {
+    if (!Validation.checkValidCountry(String(req.body.ManufacturedCountry))) {
         return "Manufacture country is invalid";
     }
-    if (!Validation.checkValidProvince(req.body.bought)) {
+    if (!Validation.checkValidProvince(String(req.body.bought))) {
         return "Bought place is invalid";
     }
-    let existCar = await Validation.checkExistCar(req.body.carNumberPlate);
+    let existCar = await Validation.checkExistCar(String(req.body.carNumberPlate));
     if (!existCar) {
-        if (!Validation.checkValidDOB(req.body.certDate)
+        if (!Validation.checkValidDOB(String(req.body.certDate))
             || Number(req.body.certDate) > now || Number(req.body.certDate) < Number(req.body.ManufacturedYear)) {
             return "Certificate date mustn't greater than now or less than manufactured year";
         }
-        if (!Validation.checkAlphabetNumericString(req.body.certNum, 20)) {
+        if (!Validation.checkAlphabetNumericString(String(req.body.certNum), 20)) {
             return "Certificate number mustn't contain special characters and length must be less than 20";
         }
     }
@@ -69,46 +69,46 @@ async function validateCarData(req, res) {
 }
 
 function validateSpecification(req, res) {
-    if (!Validation.checkValidWheelFormula(req.body.WheelFormula)) {
+    if (!Validation.checkValidWheelFormula(String(req.body.WheelFormula))) {
         return "Wheel formula is invalid. For example: 4x2";
     }
-    if (!Validation.checkNumber(req.body.WheelTread)) {
+    if (!Validation.checkNumber(String(req.body.WheelTread))) {
         return "Wheel tread must be a positive integer";
     }
-    if (!Validation.checkValidDimension(req.body.OverallDimension)) {
+    if (!Validation.checkValidDimension(String(req.body.OverallDimension))) {
         return "Overall dimension is invalid. For example: 1234 x 1234 x 1234";
     }
-    if (!Validation.checkValidDimension(req.body.LuggageContainer)) {
+    if (!Validation.checkValidDimension(String(req.body.LuggageContainer))) {
         return "Luggage container is invalid. For example: 1234 x 1234 x 1234";
     }
-    if (!Validation.checkNumber(req.body.WheelBase)) {
+    if (!Validation.checkNumber(String(req.body.WheelBase))) {
         return "Wheel base must be a positive integer";
     }
-    if (!Validation.checkNumber(req.body.KerbMass)) {
+    if (!Validation.checkNumber(String(req.body.KerbMass))) {
         return "Kerb mass must be a positive integer";
     }
-    if (!Validation.checkNumber(req.body.AuthorizedPayload)) {
+    if (!Validation.checkNumber(String(req.body.AuthorizedPayload))) {
         return "Authorized payload must be a positive integer";
     }
-    if (!Validation.checkNumber(req.body.AuthorizedTotalMass)) {
+    if (!Validation.checkNumber(String(req.body.AuthorizedTotalMass))) {
         return "Authorized total mass be a positive integer";
     }
-    if (!Validation.checkNumber(req.body.AuthorizedTowedMass)) {
+    if (!Validation.checkNumber(String(req.body.AuthorizedTowedMass))) {
         return "Authorized towed mass must be a positive integer";
     }
-    if (!Validation.checkNumber(req.body.CarriedNo)) {
+    if (!Validation.checkNumber(String(req.body.CarriedNo))) {
         return "Carry number must be a positive integer";
     }
-    if (!Validation.checkAlphabetString(req.body.FuelType, 20)) {
+    if (!Validation.checkAlphabetString(String(req.body.FuelType), 20)) {
         return "Fuel is invalid";
     }
-    if (!Validation.checkNumber(req.body.engineDisplacement)) {
+    if (!Validation.checkNumber(String(req.body.engineDisplacement))) {
         return "Engine displacement must be a positive integer";
     }
-    if (!Validation.checkValidRatio(req.body.maxOutputToRpmRatio)) {
+    if (!Validation.checkValidRatio(String(req.body.maxOutputToRpmRatio))) {
         return "Max output to RPM ratio is invalid. For example: 123/1323";
     }
-    if (!Validation.checkValidTire(req.body.numberOfTiresAndTireSize)) {
+    if (!Validation.checkValidTire(String(req.body.numberOfTiresAndTireSize))) {
         return "Number of tire or tire size is invalid. For example: 6 - 12/23R34";
     }
     return true;

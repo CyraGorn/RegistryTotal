@@ -13,6 +13,7 @@ module.exports = async (req, res, next) => {
     req.body.ssn = String(req.body.ssn).trim();
     req.body.phone = String(req.body.phone).trim();
     req.body.dob = String(req.body.dob).trim();
+    req.body.password = String(req.body.password).trim();
     var validName = Validation.checkValidName(req.body.name, 20);
     if (validName[0] === true) {
         req.body.name = validName[1];

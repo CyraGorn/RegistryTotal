@@ -2,6 +2,10 @@ const TokenModel = require('../models/Token');
 const bcrypt = require('bcrypt')
 
 module.exports = async (req, res, next) => {
+    if (!token || !userid || !newPass || !confirmPass
+        || typeof (req.body.newpassword) !== 'string' || typeof (req.body.confirmpassword) !== 'string') {
+        return res.status(404).json("Invalid or expired password reset token");
+    }
     let token = req.params.token;
     let userid = req.params.userid;
     let newPass = String(req.body.newpassword);

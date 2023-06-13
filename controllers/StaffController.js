@@ -11,6 +11,9 @@ class StaffController {
     static async login(req, res) {
         var email = req.body.email;
         var password = req.body.password;
+        if (!email || !password || typeof (email) !== 'string' || typeof (password) !== 'string') {
+            res.status(422).json({ error: 'Invalid email or password' });
+        }
         try {
             const user = await StaffModel.findOne({
                 email: email
@@ -161,6 +164,9 @@ class StaffController {
     }
 
     static async forgotPassword(req, res) {
+        if (!req.body.email || typeof (req.body.email) !== 'string') {
+            return res.status(404).json("NOT FOUND");
+        }
         let email = req.body.email;
         let user = await StaffModel.findOne({
             email: email
