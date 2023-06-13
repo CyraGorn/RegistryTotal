@@ -15,7 +15,7 @@ router.put('/change', AuthHeader, AuthChangeStaff, StaffController.changeInfo);
 router.post('/add', AuthHeader, AuthAdmin, AuthAddStaff, StaffController.addStaff);
 router.post('/change-password', AuthHeader, AuthChangePass, StaffController.changePassword);
 router.post('/forgot-password', StaffController.forgotPassword);
-router.post('/reset-password/:token', AuthResetPassword, StaffController.resetPassword);
+router.post('/reset-password/:token/:userid', AuthResetPassword, StaffController.resetPassword);
 router.get('/:id', AuthHeader, AuthAdmin, StaffController.getById);
 
 module.exports = router;
