@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt')
 
 module.exports = async (req, res, next) => {
     let token = req.params.token;
-    let userid = req.query.userid;
+    let userid = req.params.userid;
     let newPass = String(req.body.newpassword);
     let confirmPass = String(req.body.confirmpassword);
     let existToken = await TokenModel.findOne({
