@@ -188,7 +188,7 @@ class StaffController {
             token: hash,
             createdAt: Date.now()
         }).save();
-        const resetLink = `localhost:3000/reset-password/${resetToken}?userid=${user['_id']}`;
+        const resetLink = `chimerical-melba-fe1a52.netlify.app/reset-password/${resetToken}?userid=${user['_id']}`;
         sendEmail(
             user['email'],
             "Password reset Request",
