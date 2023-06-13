@@ -9,8 +9,8 @@ function validateOwnerData(req, res) {
     if (!Validation.checkValidEmail(String(req.body.owneremail))) {
         return "Email is invalid";
     }
-    if (!Validation.checkValidDOB(String(req.body.ownerdob))) {
-        return "Date of birth is invalid. Age must be between 18 and 60";
+    if (!Validation.checkValidDOBUser(String(req.body.ownerdob))) {
+        return "Date of birth is invalid. Age must be between 18 and 80";
     }
     if (!Validation.checkValidPhone(String(req.body.ownerphone))) {
         return "Phone number must have 10 numbers and start with 0";

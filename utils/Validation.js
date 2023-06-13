@@ -77,6 +77,20 @@ class validation {
         return re.test(email);
     }
 
+    static checkValidDOBUser(dob) {
+        var re = /(0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])[- /.]((?:19|20)\d\d)/
+        if (re.test(dob)) {
+            var today = new Date();
+            dob = new Date(dob);
+            var eighteenYearsAgo = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+            var sixtyYearsAgo = new Date(today.getFullYear() - 80, today.getMonth(), today.getDate());
+            if (dob <= eighteenYearsAgo && dob >= sixtyYearsAgo) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     static checkValidDOB(dob) {
         var re = /(0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])[- /.]((?:19|20)\d\d)/
         if (re.test(dob)) {
