@@ -73,39 +73,37 @@ class InspectController {
         if (!regisNum) {
             return res.status(500).json("SERVER UNAVAILABLE");
         }
-        let newReg = RegistryModel.create({
+        let newReg = await RegistryModel.create({
             regisNum: regisNum,
             regisStaff: result['id'],
             regisPlace: result['workFor'],
             car: existCar['_id'],
             regisDate: new Date(),
             expiredDate: expiredDate
-        }).then(async (data) => {
-            let id = data['_id'];
-            await CarsModel.updateOne({
-                numberPlate: existCar['numberPlate']
-            }, {
-                $push: {
-                    registry: id
-                }
-            }).catch((err) => {
-                return res.status(500).json("SERVER UNAVAILABLE");
-            })
-            await StaffModel.updateOne({
-                _id: result['id']
-            }, {
-                $push: {
-                    registed: id
-                }
-            }).catch((err) => {
-                return res.status(500).json("SERVER UNAVAILABLE");
-            })
-            return res.status(200).json({
-                status: "SUCCEEDED",
-                regisNum: regisNum
-            });
         }).catch((err) => {
             return res.status(500).json("SERVER UNAVAILABLE");
+        });
+        await CarsModel.updateOne({
+            numberPlate: existCar['numberPlate']
+        }, {
+            $push: {
+                registry: newReg['_id']
+            }
+        }).catch((err) => {
+            return res.status(500).json("SERVER UNAVAILABLE");
+        });
+        await StaffModel.updateOne({
+            _id: result['id']
+        }, {
+            $push: {
+                registed: newReg['_id']
+            }
+        }).catch((err) => {
+            return res.status(500).json("SERVER UNAVAILABLE");
+        });
+        return res.status(200).json({
+            status: "SUCCEEDED",
+            regisNum: regisNum
         });
     }
 }
