@@ -84,6 +84,15 @@ class InspectionCalculation {
             existOwner = await OwnerModel.create(owner).catch((err) => {
                 return null;
             })
+        } else {
+            existOwner['data']['name'] = owner['data']['name'];
+            existOwner['data']['dateOfBirth'] = owner['data']['dateOfBirth'];
+            existOwner['data']['SSN'] = owner['data']['SSN'];
+            existOwner['data']['phone'] = owner['data']['phone'];
+            existOwner['email'] = owner['name'];
+            await existOwner.save().catch((err) => {
+                return null;
+            })
         }
         return existOwner;
     }
