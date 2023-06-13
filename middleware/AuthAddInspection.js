@@ -25,7 +25,7 @@ async function validateCarData(req, res) {
     if (!Validation.checkValidPlate(String(req.body.carNumberPlate))) {
         return "Plate number is invalid";
     }
-    if (!Validation.checkValidName(String(req.body.Type), 20)[0]) {
+    if (!Validation.checkAlphabetString(String(req.body.Type), 20)) {
         return "Car type mustn't contain digit or special characters and length must be less than 20 characters";
     }
     if (!Validation.checkAlphabetString(String(req.body.Mark), 20)) {
