@@ -46,7 +46,7 @@
 		"mime-db": "^1.52.0",
 		"mime-types": "^2.1.35",
 		"moment-timezone": "^0.5.43",
-		"mongoose": "^7.0.3",
+		"mongoose": "^7.3.4",
 		"ms": "^2.0.0",
 		"negotiator": "^0.6.3",
 		"node-fetch": "^3.3.1",
